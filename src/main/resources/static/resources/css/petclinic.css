@@ -9399,6 +9399,51 @@ table td.action-column {
 hr {
   border-top: 1px dotted #34302D; }
 
+.home-hero {
+  background: linear-gradient(135deg, #6db33f 0%, #5fa134 100%);
+  color: #f1f1f1;
+  padding: 50px 24px;
+  padding-bottom: 20px;
+  border-radius: 6px;
+  margin-bottom: 50px; }
+
+.home-hero h1, .home-hero .h1 {
+  color: #f1f1f1;
+  font-size: 36px;
+  margin-bottom: 10px; }
+
+.home-hero__tagline {
+  font-size: 18px;
+  margin-bottom: 24px; }
+
+.home-hero .btn-primary {
+  background: #34302D;
+  border-color: #f1f1f1; }
+
+.home-cards {
+  margin-bottom: 40px;
+  padding-bottom: 20px; }
+
+.home-card {
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform .15s ease, box-shadow .15s ease;
+  margin-bottom: 20px; }
+
+.home-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); }
+
+.home-card__icon {
+  color: #6db33f;
+  margin-bottom: 12px; }
+
+.home-image {
+  margin-bottom: 20px; }
+
+.home-image img {
+  max-width: 320px; }
+
 @font-face {
   font-family: 'varela_roundregular';
   src: url("../fonts/varela_round-webfont.eot");
