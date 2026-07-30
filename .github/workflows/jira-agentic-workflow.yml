@@ -69,13 +69,14 @@ jobs:
       ISSUE_SUMMARY: ${{ github.event.client_payload.summary || inputs.summary }}
       ISSUE_DESCRIPTION: ${{ github.event.client_payload.description || inputs.description }}
       ISSUE_URL: ${{ github.event.client_payload.issue_url || inputs.issue_url }}
+      JIRA_CONFIGURED: ${{ secrets.JIRA_BASE_URL != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Fetch live issue details from Jira
-        if: ${{ secrets.JIRA_BASE_URL != '' }}
+        if: ${{ env.JIRA_CONFIGURED == 'true' }}
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
