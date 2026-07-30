@@ -1,0 +1,164 @@
+# Triggered by a Jira Automation rule when a sprint starts, for every story labelled
+# "agentic-workflow". The Jira rule sends a `repository_dispatch` webhook with the issue's
+# key/summary/description; Claude Code then implements the story end-to-end on its own branch
+# and opens a PR back for human + QA review.
+#
+# Jira Automation side (configure once, not part of this repo):
+#   Trigger:   Sprint started
+#   Branch:    Issues in the sprint
+#   Condition: Work item field condition — Labels contains "agentic-workflow"
+#   Action:    Send web request
+#     URL:     https://api.github.com/repos/<owner>/<repo>/dispatches
+#     Method:  POST
+#     Headers: Authorization: Bearer <fine-grained PAT with "Contents: Read and write">
+#              Accept: application/vnd.github+json
+#     Body:
+#       {
+#         "event_type": "jira-agentic-workflow",
+#         "client_payload": {
+#           "issue_key": "{{issue.key}}",
+#           "summary": "{{issue.summary}}",
+#           "description": "{{issue.description}}",
+#           "issue_url": "{{issue.url}}"
+#         }
+#       }
+#
+# The webhook's "description" smart value can be Jira's rich-text (ADF) representation, or can
+# contain raw newlines/quotes that break the JSON body before it ever reaches GitHub. Rather than
+# trust that field, the "Fetch live issue details from Jira" step below re-fetches the summary and
+# description directly from the Jira REST API using only the issue key (a safe, single-token
+# string), and overrides whatever the webhook sent. This needs three additional repo secrets:
+#   JIRA_BASE_URL   e.g. https://your-domain.atlassian.net
+#   JIRA_EMAIL      the Atlassian account email that owns the API token below
+#   JIRA_API_TOKEN  created at https://id.atlassian.com/manage-profile/security/api-tokens
+# If those secrets aren't set, the step is skipped and the workflow falls back to whatever the
+# webhook payload (or manual workflow_dispatch inputs) provided.
+
+name: Jira agentic workflow
+
+on:
+  repository_dispatch:
+    types: [jira-agentic-workflow]
+  # Lets you re-run or test the same job by hand from the Actions tab.
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: 'Jira issue key (e.g. PETC-123)'
+        required: true
+      summary:
+        description: 'Jira issue summary'
+        required: true
+      description:
+        description: 'Jira issue description'
+        required: false
+        default: ''
+      issue_url:
+        description: 'Link back to the Jira issue'
+        required: false
+        default: ''
+
+jobs:
+  implement-story:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    env:
+      ISSUE_KEY: ${{ github.event.client_payload.issue_key || inputs.issue_key }}
+      ISSUE_SUMMARY: ${{ github.event.client_payload.summary || inputs.summary }}
+      ISSUE_DESCRIPTION: ${{ github.event.client_payload.description || inputs.description }}
+      ISSUE_URL: ${{ github.event.client_payload.issue_url || inputs.issue_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch live issue details from Jira
+        if: ${{ secrets.JIRA_BASE_URL != '' }}
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          response=$(curl -sS -w '\n%{http_code}' \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Accept: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}?fields=summary,description&expand=renderedFields")
+          http_code=$(tail -n1 <<< "$response")
+          body=$(sed '$d' <<< "$response")
+
+          if [ "$http_code" != "200" ]; then
+            echo "::warning::Could not fetch $ISSUE_KEY from Jira (HTTP $http_code) — falling back to the webhook payload's summary/description."
+            exit 0
+          fi
+
+          summary=$(jq -r '.fields.summary // empty' <<< "$body")
+          description_html=$(jq -r '.renderedFields.description // empty' <<< "$body")
+          description_text=$(python3 -c 'import html, re, sys; t = re.sub(r"<[^>]+>", "\n", sys.stdin.read()); t = html.unescape(t); print(re.sub(r"\n{3,}", "\n\n", t).strip())' <<< "$description_html")
+
+          if [ -n "$summary" ]; then
+            delimiter="ghadelim_$(openssl rand -hex 8)"
+            {
+              echo "ISSUE_SUMMARY<<$delimiter"
+              echo "$summary"
+              echo "$delimiter"
+            } >> "$GITHUB_ENV"
+          fi
+          if [ -n "$description_text" ]; then
+            delimiter="ghadelim_$(openssl rand -hex 8)"
+            {
+              echo "ISSUE_DESCRIPTION<<$delimiter"
+              echo "$description_text"
+              echo "$delimiter"
+            } >> "$GITHUB_ENV"
+          fi
+
+      - name: Implement the story with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          base_branch: main
+          branch_prefix: agentic/
+          track_progress: true
+          prompt: |
+            You are implementing the Jira story ${{ env.ISSUE_KEY }} in this repository
+            as an autonomous developer. Follow CLAUDE.md for all project conventions
+            (build commands, code style, i18n, testing layout).
+
+            Jira issue: ${{ env.ISSUE_KEY }}
+            Link: ${{ env.ISSUE_URL }}
+            Summary: ${{ env.ISSUE_SUMMARY }}
+            Description:
+            ${{ env.ISSUE_DESCRIPTION }}
+
+            Do the following, in order:
+
+            1. Create a new branch off `main` named
+               `agentic/${{ env.ISSUE_KEY }}-<short-kebab-case-slug-of-summary>`.
+            2. Implement the feature/fix described above, following the existing
+               package-by-feature structure and conventions documented in CLAUDE.md.
+            3. Add automated tests for your change:
+               - Unit tests (e.g. `@WebMvcTest` slice tests for controllers).
+               - Integration tests (e.g. against the full Spring context / H2), where the
+                 change warrants it.
+               - Do NOT add or modify anything under `src/test/java/**/e2e/` (Playwright
+                 end-to-end tests) — those are owned by QA and out of scope for this workflow.
+            4. Format and validate your change before committing:
+               - `./mvnw spring-javaformat:apply`
+               - `./mvnw test -Dtest='!*E2ETests'` and confirm it passes. Do not run the
+                 `e2e` test package — browsers aren't installed in this environment.
+            5. Commit your changes with a message referencing ${{ env.ISSUE_KEY }}, push the
+               branch, and open a pull request against `main`:
+               - PR title: `[${{ env.ISSUE_KEY }}] <short description>`
+               - PR body: summarize the change, list the tests added, note that Playwright
+                 e2e coverage is intentionally left for QA, and link to
+                 ${{ env.ISSUE_URL }}.
+
+            If anything in the description is ambiguous or you get blocked (e.g. build
+            failures you can't resolve), stop, leave the branch/PR in draft state, and
+            explain the blocker clearly in the PR description instead of guessing.
+          claude_args: |
+            --max-turns 60
