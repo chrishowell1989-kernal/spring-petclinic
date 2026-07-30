@@ -64,6 +64,7 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      id-token: write
     env:
       ISSUE_KEY: ${{ github.event.client_payload.issue_key || inputs.issue_key }}
       ISSUE_SUMMARY: ${{ github.event.client_payload.summary || inputs.summary }}
