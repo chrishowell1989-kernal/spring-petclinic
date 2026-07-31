@@ -17,6 +17,8 @@ $icon-font-path:    "../../webjars/bootstrap/fonts/";
 
 $spring-green:      #6db33f;
 $spring-dark-green: #5fa134;
+$spring-light-green:      lighten($spring-green, 12%);
+$spring-light-dark-green: lighten($spring-dark-green, 12%);
 $spring-brown:      #34302D;
 $spring-grey:       #838789;
 $spring-light-grey: #f1f1f1;
@@ -210,7 +212,7 @@ hr {
 }
 
 .home-hero {
-  background: linear-gradient(135deg, $spring-green 0%, $spring-dark-green 100%);
+  background: linear-gradient(135deg, $spring-light-green 0%, $spring-light-dark-green 100%);
   color: $spring-light-grey;
   padding: 50px 24px;
   padding-bottom: 20px;
