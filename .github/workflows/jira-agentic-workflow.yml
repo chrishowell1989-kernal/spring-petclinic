@@ -124,7 +124,6 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           base_branch: main
           branch_prefix: agentic/
-          show_full_output: true
           prompt: |
             You are implementing the Jira story ${{ env.ISSUE_KEY }} in this repository
             as an autonomous developer. Follow CLAUDE.md for all project conventions
@@ -164,3 +163,4 @@ jobs:
             explain the blocker clearly in the PR description instead of guessing.
           claude_args: |
             --max-turns 60
+            --allowedTools "Bash(git *),Bash(./mvnw *)"
