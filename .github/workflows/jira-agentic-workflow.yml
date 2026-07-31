@@ -10,7 +10,7 @@
 #   Action:    Send web request
 #     URL:     https://api.github.com/repos/<owner>/<repo>/dispatches
 #     Method:  POST
-#     Headers: Authorization: Bearer <fine-grained PAT with "Contents: Read and write">
+#     Headers: Authorization: Bearer <PAT with repo + workflow scope>
 #              Accept: application/vnd.github+json
 #     Body:
 #       {
@@ -33,6 +33,13 @@
 #   JIRA_API_TOKEN  created at https://id.atlassian.com/manage-profile/security/api-tokens
 # If those secrets aren't set, the step is skipped and the workflow falls back to whatever the
 # webhook payload (or manual workflow_dispatch inputs) provided.
+#
+# Security note: issue_key/summary/description/url all originate from Jira content, which is
+# effectively untrusted input from GitHub's perspective. Every step below reads these only via
+# the job-level `env:` block and consumes them as $VAR inside scripts — never as a direct
+# ${{ github.event.client_payload.* }} interpolation inside a run: block — since the latter
+# pastes raw text into the generated shell script and lets a crafted issue title/summary break
+# out and run arbitrary commands on the runner.
 
 name: Jira agentic workflow
 
@@ -63,8 +70,6 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      issues: write
-      id-token: write
     env:
       ISSUE_KEY: ${{ github.event.client_payload.issue_key || inputs.issue_key }}
       ISSUE_SUMMARY: ${{ github.event.client_payload.summary || inputs.summary }}
@@ -118,49 +123,99 @@ jobs:
             } >> "$GITHUB_ENV"
           fi
 
-      - name: Implement the story with Claude Code
-        uses: anthropics/claude-code-action@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          base_branch: main
-          branch_prefix: agentic/
-          prompt: |
-            You are implementing the Jira story ${{ env.ISSUE_KEY }} in this repository
-            as an autonomous developer. Follow CLAUDE.md for all project conventions
-            (build commands, code style, i18n, testing layout).
+          node-version: '20'
 
-            Jira issue: ${{ env.ISSUE_KEY }}
-            Link: ${{ env.ISSUE_URL }}
-            Summary: ${{ env.ISSUE_SUMMARY }}
-            Description:
-            ${{ env.ISSUE_DESCRIPTION }}
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
 
-            Do the following, in order:
+      - name: Create working branch
+        run: |
+          slug=$(echo "$ISSUE_SUMMARY" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-50)
+          branch_name="agentic/${ISSUE_KEY}-${slug}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch_name"
+          echo "BRANCH_NAME=$branch_name" >> "$GITHUB_ENV"
 
-            1. Create a new branch off `main` named
-               `agentic/${{ env.ISSUE_KEY }}-<short-kebab-case-slug-of-summary>`.
-            2. Implement the feature/fix described above, following the existing
-               package-by-feature structure and conventions documented in CLAUDE.md.
-            3. Add automated tests for your change:
-               - Unit tests (e.g. `@WebMvcTest` slice tests for controllers).
-               - Integration tests (e.g. against the full Spring context / H2), where the
-                 change warrants it.
-               - Do NOT add or modify anything under `src/test/java/**/e2e/` (Playwright
-                 end-to-end tests) — those are owned by QA and out of scope for this workflow.
-            4. Format and validate your change before committing:
-               - `./mvnw spring-javaformat:apply`
-               - `./mvnw test -Dtest='!*E2ETests'` and confirm it passes. Do not run the
-                 `e2e` test package — browsers aren't installed in this environment.
-            5. Commit your changes with a message referencing ${{ env.ISSUE_KEY }}, push the
-               branch, and open a pull request against `main`:
-               - PR title: `[${{ env.ISSUE_KEY }}] <short description>`
-               - PR body: summarize the change, list the tests added, note that Playwright
-                 e2e coverage is intentionally left for QA, and link to
-                 ${{ env.ISSUE_URL }}.
+      - name: Run Claude Code agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          {
+            echo "You are implementing the Jira story $ISSUE_KEY in this repository as an"
+            echo "autonomous developer. Follow CLAUDE.md for all project conventions (build"
+            echo "commands, code style, i18n, testing layout)."
+            echo ""
+            echo "Jira issue: $ISSUE_KEY"
+            echo "Link: $ISSUE_URL"
+            echo "Summary: $ISSUE_SUMMARY"
+            echo "Description:"
+            echo "$ISSUE_DESCRIPTION"
+            cat <<'PROMPT_EOF'
 
-            If anything in the description is ambiguous or you get blocked (e.g. build
-            failures you can't resolve), stop, leave the branch/PR in draft state, and
-            explain the blocker clearly in the PR description instead of guessing.
-          claude_args: |
-            --max-turns 60
-            --allowedTools "Bash(git *),Bash(./mvnw *)"
+          Do the following, in order:
+
+          1. Implement the feature/fix described above, following the existing
+             package-by-feature structure and conventions documented in CLAUDE.md.
+          2. Add automated tests for your change:
+             - Unit tests (e.g. @WebMvcTest slice tests for controllers).
+             - Integration tests (e.g. against the full Spring context / H2), where the
+               change warrants it.
+             - Do NOT add or modify anything under src/test/java/**/e2e/ (Playwright
+               end-to-end tests) — those are owned by QA and out of scope for this workflow.
+          3. Format and validate your change before finishing:
+             - ./mvnw spring-javaformat:apply
+             - ./mvnw test -Dtest='!*E2ETests' and confirm it passes. Do not run the e2e
+               test package — browsers aren't installed in this environment.
+
+          Do not run any git commands (branch/commit/push) yourself — the workflow that
+          invoked you handles committing and opening the pull request after you finish.
+
+          If anything above is ambiguous or you get blocked (e.g. build failures you can't
+          resolve), stop and clearly explain the blocker as your final response instead of
+          guessing or leaving the change half-done.
+          PROMPT_EOF
+          } > /tmp/claude-prompt.txt
+
+          claude --dangerously-skip-permissions --max-turns 40 -p "$(cat /tmp/claude-prompt.txt)" \
+            | tee /tmp/claude-output.txt
+
+      - name: Commit and push changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No changes produced by Claude — skipping commit/push/PR."
+            echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          git add -A
+          git commit -m "${ISSUE_KEY}: ${ISSUE_SUMMARY}"
+          git push origin "$BRANCH_NAME"
+          echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
+
+      - name: Open pull request
+        if: ${{ env.HAS_CHANGES == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "Automated PR generated by Claude Code for Jira issue $ISSUE_KEY."
+            echo ""
+            echo "$ISSUE_URL"
+            echo ""
+            echo "Playwright e2e coverage is intentionally left for QA."
+            echo ""
+            echo "<details><summary>Agent's final notes</summary>"
+            echo ""
+            echo '```'
+            tail -c 4000 /tmp/claude-output.txt
+            echo '```'
+            echo "</details>"
+          } > /tmp/pr-body.txt
+          gh pr create \
+            --title "[$ISSUE_KEY] $ISSUE_SUMMARY" \
+            --body-file /tmp/pr-body.txt \
+            --base main \
+            --head "$BRANCH_NAME"
