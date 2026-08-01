@@ -81,19 +81,24 @@ jobs:
             echo '```'
             cat <<'PROMPT_EOF'
 
+          The PR description above includes an "Acceptance criteria" section taken from the
+          original Jira ticket. Treat that as your test spec.
+
           Do the following, in order:
 
-          1. Add Playwright e2e test(s) under src/test/java/**/e2e/ covering the user-facing
-             behaviour of this change, following the existing conventions in that directory
-             (CLAUDE.md: @SpringBootTest(webEnvironment = RANDOM_PORT), a class-level headless
-             Chromium Browser launched once in @BeforeAll, a fresh Page per test).
+          1. Add Playwright e2e test(s) under src/test/java/**/e2e/ that verify the
+             acceptance criteria specifically — one assertion (or test) per criterion where
+             practical, not just a generic smoke test of the diff. Follow the existing
+             conventions in that directory (CLAUDE.md: @SpringBootTest(webEnvironment =
+             RANDOM_PORT), a class-level headless Chromium Browser launched once in
+             @BeforeAll, a fresh Page per test).
           2. Run the new test(s) (browsers are already installed in this environment) and
              confirm they pass. Iterate if they don't.
           3. Only touch files under src/test/java/**/e2e/ — do not modify the feature
              implementation, other tests, or any other part of the codebase.
 
-          If the change doesn't have any meaningful user-facing behaviour to cover end-to-end,
-          say so plainly instead of writing a token test.
+          If the acceptance criteria are missing, too vague to test, or don't match what the
+          diff actually does, say so plainly instead of guessing or writing a token test.
 
           Do not run any git commands (branch/commit/push) yourself — the workflow that
           invoked you handles committing and pushing after you finish.
