@@ -58,7 +58,7 @@ jobs:
           java-version: '17'
 
       - name: Install Playwright browsers
-        run: ./mvnw -B exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
+        run: ./mvnw -B exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
 
       - name: Write e2e coverage with Claude Code
         env:
