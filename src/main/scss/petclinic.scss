@@ -17,6 +17,7 @@ $icon-font-path:    "../../webjars/bootstrap/fonts/";
 
 $spring-green:      #6db33f;
 $spring-dark-green: #5fa134;
+$spring-light-green: #b9dea1;
 $spring-brown:      #34302D;
 $spring-grey:       #838789;
 $spring-light-grey: #f1f1f1;
@@ -210,8 +211,8 @@ hr {
 }
 
 .home-hero {
-  background: linear-gradient(135deg, $spring-green 0%, $spring-dark-green 100%);
-  color: $spring-light-grey;
+  background: linear-gradient(135deg, $spring-light-green 0%, darken($spring-light-green, 8%) 100%);
+  color: $spring-brown;
   padding: 50px 24px;
   padding-bottom: 20px;
   border-radius: 6px;
@@ -219,7 +220,7 @@ hr {
 }
 
 .home-hero h1 {
-  color: $spring-light-grey;
+  color: $spring-brown;
   font-size: 36px;
   margin-bottom: 10px;
 }
@@ -231,7 +232,7 @@ hr {
 
 .home-hero .btn-primary {
   background: $spring-brown;
-  border-color: $spring-light-grey;
+  border-color: $spring-brown;
 }
 
 .home-cards {
