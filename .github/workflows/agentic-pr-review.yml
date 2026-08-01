@@ -1,10 +1,32 @@
-# Runs when the Jira agentic workflow (jira-agentic-workflow.yml) opens or updates a PR —
-# scoped to `agentic/*` branches so it doesn't fire on regular human PRs. Claude reviews the
-# diff as a senior developer would and leaves a single PR comment with its findings.
+# Runs when jira-agentic-workflow.yml transitions a Jira issue to a "review" status after
+# opening its PR (see that workflow's "Transition Jira issue to In Review" step). Claude reviews
+# the diff as a senior developer would and leaves a single PR comment with its findings.
 #
-# Triggers on both `opened` and `synchronize` so the review always reflects the latest pushed
-# state: if a human (or another agent) addresses nits with a follow-up commit, this re-runs
-# against the new diff rather than leaving a stale review sitting on the PR.
+# Deliberately triggered by Jira (via repository_dispatch) rather than GitHub's own `pull_request`
+# event: a `pull_request`-triggered run on a bot-authored PR requires a human to click "Approve
+# and run workflows" before it executes at all, whereas repository_dispatch always creates a run
+# regardless of who authored the PR. Since the dispatch payload only carries the issue key, not a
+# PR number, the "Find the PR for this issue" step below looks up the open PR by matching its
+# head branch against agentic/<issue key>-* before reviewing it.
+#
+# Jira Automation side (configure once, not part of this repo):
+#   Trigger:   Issue transitioned
+#   To status: whatever "In Review"-equivalent status jira-agentic-workflow.yml's transition
+#              step lands on for your project (it picks whichever available transition name
+#              contains "review")
+#   Condition: Work item field condition — Labels contains "agentic-workflow"
+#   Action:    Send web request
+#     URL:     https://api.github.com/repos/<owner>/<repo>/dispatches
+#     Method:  POST
+#     Headers: Authorization: Bearer <PAT with repo + workflow scope>
+#              Accept: application/vnd.github+json
+#     Body:
+#       {
+#         "event_type": "jira-review-requested",
+#         "client_payload": {
+#           "issue_key": "{{issue.key}}"
+#         }
+#       }
 #
 # This is deliberately non-blocking: it never calls `gh pr review --approve` or
 # `--request-changes`, only `gh pr comment`. A formal --approve wouldn't work here anyway —
@@ -12,32 +34,70 @@
 # identity via GITHUB_TOKEN, and GitHub rejects a bot approving its own PR. Sign-off here is a
 # human clicking Approve on GitHub, which is what triggers agentic-qa-playwright.yml.
 #
-# Security note: PR title/body/base-ref are read via job-level env: and consumed as $VAR inside
-# scripts, never interpolated directly via ${{ }} in a run: block — same rationale as
-# jira-agentic-workflow.yml, since PR metadata here ultimately traces back to Jira issue text.
+# Security note: issue key/PR title/body/base-ref are read via job-level env: and consumed as
+# $VAR inside scripts, never interpolated directly via ${{ }} in a run: block — same rationale
+# as jira-agentic-workflow.yml, since this content ultimately traces back to Jira issue text.
 
 name: Agentic PR review
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  repository_dispatch:
+    types: [jira-review-requested]
+  # Lets you re-run or test the same job by hand from the Actions tab.
+  workflow_dispatch:
+    inputs:
+      issue_key:
+        description: 'Jira issue key whose open PR should be reviewed (e.g. PETC-123)'
+        required: true
 
 jobs:
   review:
-    if: startsWith(github.event.pull_request.head.ref, 'agentic/')
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     env:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      PR_TITLE: ${{ github.event.pull_request.title }}
-      PR_BODY: ${{ github.event.pull_request.body }}
-      BASE_REF: ${{ github.event.pull_request.base.ref }}
+      ISSUE_KEY: ${{ github.event.client_payload.issue_key || inputs.issue_key }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Find the PR for this issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          pr_json=$(gh pr list --state open --json number,title,body,baseRefName,headRefName --limit 100 \
+            | jq --arg prefix "agentic/${ISSUE_KEY}-" '[.[] | select(.headRefName | startswith($prefix))]')
+
+          count=$(jq 'length' <<< "$pr_json")
+          if [ "$count" -eq 0 ]; then
+            echo "::error::No open PR found with a head branch starting agentic/${ISSUE_KEY}-"
+            exit 1
+          fi
+
+          echo "PR_NUMBER=$(jq -r '.[0].number' <<< "$pr_json")" >> "$GITHUB_ENV"
+          echo "BASE_REF=$(jq -r '.[0].baseRefName' <<< "$pr_json")" >> "$GITHUB_ENV"
+          echo "HEAD_REF=$(jq -r '.[0].headRefName' <<< "$pr_json")" >> "$GITHUB_ENV"
+
+          delimiter="ghadelim_$(openssl rand -hex 8)"
+          {
+            echo "PR_TITLE<<$delimiter"
+            jq -r '.[0].title' <<< "$pr_json"
+            echo "$delimiter"
+          } >> "$GITHUB_ENV"
+          {
+            echo "PR_BODY<<$delimiter"
+            jq -r '.[0].body' <<< "$pr_json"
+            echo "$delimiter"
+          } >> "$GITHUB_ENV"
+
+      - name: Check out the PR branch
+        run: |
+          git fetch origin "$HEAD_REF"
+          git checkout "$HEAD_REF"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

@@ -17,22 +17,33 @@
 #         "event_type": "jira-agentic-workflow",
 #         "client_payload": {
 #           "issue_key": "{{issue.key}}",
-#           "summary": "{{issue.summary}}",
-#           "description": "{{issue.description}}",
+#           "summary": {{issue.summary.asJsonString}},
+#           "description": {{issue.description.asJsonString}},
 #           "issue_url": "{{issue.url}}"
 #         }
 #       }
+#     Note: summary/description use Jira's .asJsonString smart value modifier (which supplies
+#     its own surrounding quotes — don't add literal quotes around those two). Plain free text
+#     from Jira can contain quotes/newlines that break the JSON body before it reaches GitHub;
+#     issue_key/issue_url are structurally safe and don't need it.
 #
-# The webhook's "description" smart value can be Jira's rich-text (ADF) representation, or can
-# contain raw newlines/quotes that break the JSON body before it ever reaches GitHub. Rather than
-# trust that field, the "Fetch live issue details from Jira" step below re-fetches the summary and
-# description directly from the Jira REST API using only the issue key (a safe, single-token
-# string), and overrides whatever the webhook sent. This needs three additional repo secrets:
+# The "Fetch live issue details from Jira" step below re-fetches the summary and description
+# directly from the Jira REST API using only the issue key, and overrides whatever the webhook
+# sent, as a second line of defence beyond .asJsonString above. This needs three additional repo
+# secrets, which are also required by the "Transition Jira issue to In Review" step further down:
 #   JIRA_BASE_URL   e.g. https://your-domain.atlassian.net
 #   JIRA_EMAIL      the Atlassian account email that owns the API token below
 #   JIRA_API_TOKEN  created at https://id.atlassian.com/manage-profile/security/api-tokens
-# If those secrets aren't set, the step is skipped and the workflow falls back to whatever the
-# webhook payload (or manual workflow_dispatch inputs) provided.
+# If those secrets aren't set, both steps are skipped: the description-fetch falls back to
+# whatever the webhook payload (or manual workflow_dispatch inputs) provided, and the issue is
+# simply left in its current status rather than transitioned.
+#
+# The "Transition Jira issue to In Review" step moves the issue to whichever of its available
+# transitions has "review" in the name, once the PR is open. That transition is itself the
+# trigger for a second Jira Automation rule (see agentic-pr-review.yml's header) that kicks off
+# the review workflow — deliberately routed through Jira rather than GitHub's own `pull_request`
+# event, since a `repository_dispatch` run doesn't hit the "bot-authored PR requires manual
+# approval to run workflows" gate that a `pull_request`-triggered one does.
 #
 # Security note: issue_key/summary/description/url all originate from Jira content, which is
 # effectively untrusted input from GitHub's perspective. Every step below reads these only via
@@ -225,3 +236,34 @@ jobs:
             --body-file /tmp/pr-body.txt \
             --base main \
             --head "$BRANCH_NAME"
+
+      - name: Transition Jira issue to In Review
+        if: ${{ env.HAS_CHANGES == 'true' && env.JIRA_CONFIGURED == 'true' }}
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          transitions=$(curl -sS -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Accept: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions")
+
+          transition_id=$(jq -r '.transitions[] | select(.name | test("review"; "i")) | .id' <<< "$transitions" | head -n1)
+
+          if [ -z "$transition_id" ]; then
+            available=$(jq -r '[.transitions[].name] | join(", ")' <<< "$transitions")
+            echo "::warning::No transition matching \"review\" found for $ISSUE_KEY — leaving its status as-is. Available transitions: $available"
+            exit 0
+          fi
+
+          http_code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+            -d "{\"transition\": {\"id\": \"${transition_id}\"}}")
+
+          if [ "$http_code" != "204" ]; then
+            echo "::warning::Failed to transition $ISSUE_KEY (HTTP $http_code) — PR was still opened successfully."
+          fi

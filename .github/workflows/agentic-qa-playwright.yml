@@ -14,6 +14,13 @@
 # against the added test files. That's treated as intentional here (the review agent's job was
 # to review the feature implementation, not the QA bot's own test scaffolding), not a bug.
 #
+# At the start of the run, "Transition Jira issue to QA" moves the issue to whichever available
+# transition has "qa" in the name — mirroring jira-agentic-workflow.yml's own transition to a
+# "review" status once its PR is open. Requires the same JIRA_BASE_URL/JIRA_EMAIL/JIRA_API_TOKEN
+# secrets as that workflow; skipped if they're not set. The issue key isn't available directly
+# from the pull_request_review event, so it's parsed back out of the head branch name (which
+# jira-agentic-workflow.yml names agentic/<issue key>-<slug>).
+#
 # Security note: PR title/body/branch refs are read via job-level env: and consumed as $VAR
 # inside scripts, never interpolated directly via ${{ }} in a run: block — same rationale as
 # the other agentic workflows.
@@ -37,11 +44,48 @@ jobs:
       PR_BODY: ${{ github.event.pull_request.body }}
       BASE_REF: ${{ github.event.pull_request.base.ref }}
       HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      JIRA_CONFIGURED: ${{ secrets.JIRA_BASE_URL != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
+
+      - name: Derive Jira issue key from branch name
+        run: |
+          issue_key=$(echo "$HEAD_REF" | sed -E 's#^agentic/([A-Za-z0-9]+-[0-9]+)-.*#\1#')
+          echo "ISSUE_KEY=$issue_key" >> "$GITHUB_ENV"
+
+      - name: Transition Jira issue to QA
+        if: ${{ env.JIRA_CONFIGURED == 'true' }}
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          transitions=$(curl -sS -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Accept: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions")
+
+          transition_id=$(jq -r '.transitions[] | select(.name | test("qa"; "i")) | .id' <<< "$transitions" | head -n1)
+
+          if [ -z "$transition_id" ]; then
+            available=$(jq -r '[.transitions[].name] | join(", ")' <<< "$transitions")
+            echo "::warning::No transition matching \"qa\" found for $ISSUE_KEY — leaving its status as-is. Available transitions: $available"
+            exit 0
+          fi
+
+          http_code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+            -d "{\"transition\": {\"id\": \"${transition_id}\"}}")
+
+          if [ "$http_code" != "204" ]; then
+            echo "::warning::Failed to transition $ISSUE_KEY (HTTP $http_code) — e2e coverage will still be attempted."
+          fi
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
