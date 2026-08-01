@@ -1,0 +1,126 @@
+# Runs when a human approves a PR opened by the Jira agentic workflow (scoped to `agentic/*`
+# branches). At that point the implementation itself is considered signed off, so this adds the
+# Playwright e2e coverage that jira-agentic-workflow.yml deliberately left out (per CLAUDE.md,
+# e2e tests are owned by QA, not the implementer), and pushes it as a follow-up commit on the
+# same branch.
+#
+# Gating on a human approval (rather than e.g. every push) means QA effort is spent once the
+# implementation is stable, not against code that's about to change based on review nits — see
+# the discussion that led here: writing e2e coverage before nits are addressed risks it going
+# stale immediately.
+#
+# Note: this pushes using the default GITHUB_TOKEN, which — by GitHub's own design — does not
+# trigger other workflow runs. So this commit will NOT cause agentic-pr-review.yml to re-run
+# against the added test files. That's treated as intentional here (the review agent's job was
+# to review the feature implementation, not the QA bot's own test scaffolding), not a bug.
+#
+# Security note: PR title/body/branch refs are read via job-level env: and consumed as $VAR
+# inside scripts, never interpolated directly via ${{ }} in a run: block — same rationale as
+# the other agentic workflows.
+
+name: Agentic QA Playwright coverage
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  add-e2e-coverage:
+    if: ${{ github.event.review.state == 'approved' && startsWith(github.event.pull_request.head.ref, 'agentic/') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+      BASE_REF: ${{ github.event.pull_request.base.ref }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Playwright browsers
+        run: ./mvnw -B exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
+
+      - name: Write e2e coverage with Claude Code
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          {
+            echo "You are the QA engineer for this repository. A pull request implementing a"
+            echo "Jira story has just been approved by a human reviewer. Your job is to add"
+            echo "Playwright end-to-end coverage for what it built — the implementer"
+            echo "deliberately left this out, per CLAUDE.md, because e2e is owned by QA."
+            echo ""
+            echo "PR #$PR_NUMBER: $PR_TITLE"
+            echo ""
+            echo "PR description:"
+            echo "$PR_BODY"
+            echo ""
+            echo "Diff (the feature you're adding e2e coverage for):"
+            echo '```diff'
+            git diff "origin/${BASE_REF}...HEAD"
+            echo '```'
+            cat <<'PROMPT_EOF'
+
+          Do the following, in order:
+
+          1. Add Playwright e2e test(s) under src/test/java/**/e2e/ covering the user-facing
+             behaviour of this change, following the existing conventions in that directory
+             (CLAUDE.md: @SpringBootTest(webEnvironment = RANDOM_PORT), a class-level headless
+             Chromium Browser launched once in @BeforeAll, a fresh Page per test).
+          2. Run the new test(s) (browsers are already installed in this environment) and
+             confirm they pass. Iterate if they don't.
+          3. Only touch files under src/test/java/**/e2e/ — do not modify the feature
+             implementation, other tests, or any other part of the codebase.
+
+          If the change doesn't have any meaningful user-facing behaviour to cover end-to-end,
+          say so plainly instead of writing a token test.
+
+          Do not run any git commands (branch/commit/push) yourself — the workflow that
+          invoked you handles committing and pushing after you finish.
+          PROMPT_EOF
+          } > /tmp/qa-prompt.txt
+
+          claude --dangerously-skip-permissions --max-turns 40 -p "$(cat /tmp/qa-prompt.txt)" \
+            > /tmp/qa-output.txt
+          cat /tmp/qa-output.txt
+
+      - name: Commit and push e2e coverage
+        run: |
+          if [ -z "$(git status --porcelain -- src/test/java)" ]; then
+            echo "No e2e changes produced by Claude — skipping commit/push/comment."
+            echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A -- src/test/java
+          git commit -m "${PR_TITLE}: add Playwright e2e coverage"
+          git push origin "HEAD:${HEAD_REF}"
+          echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
+
+      - name: Comment on PR
+        if: ${{ env.HAS_CHANGES == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body "Added Playwright e2e coverage for this change, per the QA follow-up on human approval. See the latest commit."

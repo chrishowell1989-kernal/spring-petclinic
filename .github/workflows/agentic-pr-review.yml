@@ -1,0 +1,95 @@
+# Runs when the Jira agentic workflow (jira-agentic-workflow.yml) opens or updates a PR —
+# scoped to `agentic/*` branches so it doesn't fire on regular human PRs. Claude reviews the
+# diff as a senior developer would and leaves a single PR comment with its findings.
+#
+# Triggers on both `opened` and `synchronize` so the review always reflects the latest pushed
+# state: if a human (or another agent) addresses nits with a follow-up commit, this re-runs
+# against the new diff rather than leaving a stale review sitting on the PR.
+#
+# This is deliberately non-blocking: it never calls `gh pr review --approve` or
+# `--request-changes`, only `gh pr comment`. A formal --approve wouldn't work here anyway —
+# both this workflow and the implementer workflow authenticate as the same github-actions[bot]
+# identity via GITHUB_TOKEN, and GitHub rejects a bot approving its own PR. Sign-off here is a
+# human clicking Approve on GitHub, which is what triggers agentic-qa-playwright.yml.
+#
+# Security note: PR title/body/base-ref are read via job-level env: and consumed as $VAR inside
+# scripts, never interpolated directly via ${{ }} in a run: block — same rationale as
+# jira-agentic-workflow.yml, since PR metadata here ultimately traces back to Jira issue text.
+
+name: Agentic PR review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    if: startsWith(github.event.pull_request.head.ref, 'agentic/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+      BASE_REF: ${{ github.event.pull_request.base.ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Review the PR with Claude Code
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          {
+            echo "You are a senior developer reviewing a colleague's pull request in this"
+            echo "repository. Follow CLAUDE.md for the project's conventions when judging"
+            echo "the change."
+            echo ""
+            echo "PR #$PR_NUMBER: $PR_TITLE"
+            echo ""
+            echo "PR description:"
+            echo "$PR_BODY"
+            echo ""
+            echo "Diff:"
+            echo '```diff'
+            git diff "origin/${BASE_REF}...HEAD"
+            echo '```'
+            cat <<'PROMPT_EOF'
+
+          Review this change the way a thoughtful senior developer would: correctness
+          bugs, missed edge cases, adherence to CLAUDE.md conventions, test coverage and
+          quality, and anything over- or under-engineered for the task. You may read
+          other files in the repo for context. Do not modify any files or run any
+          commands other than reading files — you are reviewing only.
+
+          This is a low-stakes demo review, not a merge gate, and a human always has
+          final sign-off — nobody is blocked by what you write here. Leave nits and
+          suggestions freely. If the change looks solid, say so plainly, something like
+          "LGTM — waiting on sign-off from a human reviewer", and list any nits below
+          that. If you find a genuine correctness problem, call it out clearly, but
+          still frame it as input for the human reviewer, not a verdict.
+
+          Respond with plain markdown only — this becomes the PR comment verbatim. Do
+          not include a decision keyword or approval status, just the review itself.
+          PROMPT_EOF
+          } > /tmp/review-prompt.txt
+
+          claude --max-turns 20 -p "$(cat /tmp/review-prompt.txt)" > /tmp/review-output.txt
+          cat /tmp/review-output.txt
+
+      - name: Post review comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "$PR_NUMBER" --body-file /tmp/review-output.txt
