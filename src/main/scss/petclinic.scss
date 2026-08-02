@@ -17,6 +17,11 @@ $icon-font-path:    "../../webjars/bootstrap/fonts/";
 
 $spring-green:      #6db33f;
 $spring-dark-green: #5fa134;
+// Hero banner uses a lighter tint of the brand green (same hue/saturation
+// family, higher lightness). Kept as hero-only variables so the change is
+// scoped to the hero banner and doesn't affect nav/pagination/card icons.
+$hero-green:        lighten($spring-green, 28%);
+$hero-dark-green:   lighten($spring-dark-green, 28%);
 $spring-brown:      #34302D;
 $spring-grey:       #838789;
 $spring-light-grey: #f1f1f1;
@@ -210,8 +215,10 @@ hr {
 }
 
 .home-hero {
-  background: linear-gradient(135deg, $spring-green 0%, $spring-dark-green 100%);
-  color: $spring-light-grey;
+  background: linear-gradient(135deg, $hero-green 0%, $hero-dark-green 100%);
+  // Dark text on the lighter green keeps the WCAG AA 4.5:1 contrast ratio
+  // that light text would lose against the higher-lightness background.
+  color: $spring-brown;
   padding: 50px 24px;
   padding-bottom: 20px;
   border-radius: 6px;
@@ -219,7 +226,7 @@ hr {
 }
 
 .home-hero h1 {
-  color: $spring-light-grey;
+  color: $spring-brown;
   font-size: 36px;
   margin-bottom: 10px;
 }
@@ -231,7 +238,7 @@ hr {
 
 .home-hero .btn-primary {
   background: $spring-brown;
-  border-color: $spring-light-grey;
+  border-color: $spring-brown;
 }
 
 .home-cards {
