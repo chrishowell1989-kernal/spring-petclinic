@@ -30,13 +30,19 @@
 # The "Fetch live issue details from Jira" step below re-fetches the summary and description
 # directly from the Jira REST API using only the issue key, and overrides whatever the webhook
 # sent, as a second line of defence beyond .asJsonString above. This needs three additional repo
-# secrets, which are also required by the "Transition Jira issue to In Review" step further down:
+# secrets, which are also required by the "Transition Jira issue to In Progress"/"In Review" steps
+# further down:
 #   JIRA_BASE_URL   e.g. https://your-domain.atlassian.net
 #   JIRA_EMAIL      the Atlassian account email that owns the API token below
 #   JIRA_API_TOKEN  created at https://id.atlassian.com/manage-profile/security/api-tokens
-# If those secrets aren't set, both steps are skipped: the description-fetch falls back to
-# whatever the webhook payload (or manual workflow_dispatch inputs) provided, and the issue is
-# simply left in its current status rather than transitioned.
+# If those secrets aren't set, all three of those steps are skipped: the description-fetch falls
+# back to whatever the webhook payload (or manual workflow_dispatch inputs) provided, and the
+# issue is simply left in its current status rather than transitioned.
+#
+# The "Transition Jira issue to In Progress" step runs right after the issue details are fetched,
+# before the agent starts work, and moves the issue to whichever available transition has
+# "in progress" in the name — purely a status signal for humans watching the board, nothing reads
+# it back or depends on it.
 #
 # The "Transition Jira issue to In Review" step moves the issue to whichever of its available
 # transitions has "review" in the name, once the PR is open. That transition is itself the
@@ -132,6 +138,37 @@ jobs:
               echo "$description_text"
               echo "$delimiter"
             } >> "$GITHUB_ENV"
+          fi
+
+      - name: Transition Jira issue to In Progress
+        if: ${{ env.JIRA_CONFIGURED == 'true' }}
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          transitions=$(curl -sS -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Accept: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions")
+
+          transition_id=$(jq -r '.transitions[] | select(.name | test("in progress"; "i")) | .id' <<< "$transitions" | head -n1)
+
+          if [ -z "$transition_id" ]; then
+            available=$(jq -r '[.transitions[].name] | join(", ")' <<< "$transitions")
+            echo "::warning::No transition matching \"in progress\" found for $ISSUE_KEY — leaving its status as-is. Available transitions: $available"
+            exit 0
+          fi
+
+          http_code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+            -d "{\"transition\": {\"id\": \"${transition_id}\"}}")
+
+          if [ "$http_code" != "204" ]; then
+            echo "::warning::Failed to transition $ISSUE_KEY to In Progress (HTTP $http_code) — continuing anyway."
           fi
 
       - name: Set up Node.js
