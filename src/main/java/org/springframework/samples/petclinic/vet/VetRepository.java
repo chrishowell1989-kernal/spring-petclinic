@@ -19,7 +19,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
@@ -54,5 +56,19 @@ public interface VetRepository extends Repository<Vet, Integer> {
 	@Transactional(readOnly = true)
 	@Cacheable("vets")
 	Page<Vet> findAll(Pageable pageable) throws DataAccessException;
+
+	/**
+	 * Retrieve <code>Vet</code>s from the data store whose combined first and last name
+	 * contains the given term, ignoring case. Used to back the name search on the vets
+	 * page across the whole data set (not just the current page).
+	 * @param name the (partial) name to search for; matched case-insensitively against
+	 * "<i>firstName lastName</i>"
+	 * @param pageable the requested page
+	 * @return a page of matching <code>Vet</code>s (possibly empty)
+	 */
+	@Transactional(readOnly = true)
+	@Query("SELECT vet FROM Vet vet "
+			+ "WHERE LOWER(CONCAT(vet.firstName, ' ', vet.lastName)) LIKE LOWER(CONCAT('%', :name, '%'))")
+	Page<Vet> findByName(@Param("name") String name, Pageable pageable);
 
 }

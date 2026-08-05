@@ -42,8 +42,13 @@ class VetController {
 	}
 
 	@GetMapping("/vets.html")
-	public String showVetList(@RequestParam(defaultValue = "1") int page, Model model) {
-		Page<Vet> paginated = findPaginated(page);
+	public String showVetList(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(name = "name", defaultValue = "") String name, Model model) {
+		// A blank search term (or an all-whitespace one) falls back to the full paged
+		// list, so the page behaves exactly as before when no filter is applied.
+		String searchName = name.strip();
+		Page<Vet> paginated = findPaginated(page, searchName);
+		model.addAttribute("name", searchName);
 		return addPaginationModel(page, paginated, model);
 	}
 
@@ -56,10 +61,15 @@ class VetController {
 		return "vets/vetList";
 	}
 
-	private Page<Vet> findPaginated(int page) {
+	private Page<Vet> findPaginated(int page, String name) {
 		int pageSize = 5;
 		Pageable pageable = PageRequest.of(page - 1, pageSize);
-		return vetRepository.findAll(pageable);
+		// Search is backend-driven: the filter is applied across the whole data set, then
+		// paged, rather than filtering an already-paged list on the client.
+		if (name.isEmpty()) {
+			return vetRepository.findAll(pageable);
+		}
+		return vetRepository.findByName(name, pageable);
 	}
 
 	@GetMapping({ "/vets" })

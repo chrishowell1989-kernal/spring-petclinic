@@ -17,6 +17,7 @@
 package org.springframework.samples.petclinic.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -30,6 +31,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.samples.petclinic.owner.Owner;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
@@ -212,6 +214,31 @@ class ClinicServiceTests {
 		assertThat(vet.getNrOfSpecialties()).isEqualTo(2);
 		assertThat(vet.getSpecialties().get(0).getName()).isEqualTo("dentistry");
 		assertThat(vet.getSpecialties().get(1).getName()).isEqualTo("surgery");
+	}
+
+	@Test
+	void shouldFindVetsByPartialNameIgnoringCase() {
+		// A partial term matches regardless of casing (Scenario 2).
+		Page<Vet> lower = this.vets.findByName("helen", PageRequest.of(0, 10));
+		assertThat(lower).extracting(Vet::getLastName).containsExactly("Leary");
+
+		Page<Vet> upper = this.vets.findByName("HELEN", PageRequest.of(0, 10));
+		assertThat(upper).extracting(Vet::getLastName).containsExactly("Leary");
+	}
+
+	@Test
+	void shouldFindVetsByCombinedFirstAndLastName() {
+		// "Name" covers first and last name combined (Assumptions in SCRUM-8).
+		Page<Vet> result = this.vets.findByName("james car", PageRequest.of(0, 10));
+		assertThat(result).extracting(Vet::getFirstName, Vet::getLastName).containsExactly(tuple("James", "Carter"));
+	}
+
+	@Test
+	void shouldReturnEmptyPageWhenNoVetNameMatches() {
+		// No matches yields an empty page, which backs the "No vets found" state
+		// (Scenario 3).
+		Page<Vet> result = this.vets.findByName("no-such-vet", PageRequest.of(0, 10));
+		assertThat(result).isEmpty();
 	}
 
 	@Test

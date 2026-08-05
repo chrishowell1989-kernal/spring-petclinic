@@ -32,7 +32,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -87,6 +90,47 @@ class VetControllerTests {
 			.andExpect(model().attributeExists("listVets"))
 			.andExpect(view().name("vets/vetList"));
 
+	}
+
+	@Test
+	void showVetListFilteredByName() throws Exception {
+		given(this.vets.findByName(eq("helen"), any(Pageable.class)))
+			.willReturn(new PageImpl<Vet>(Lists.newArrayList(helen())));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?name=helen"))
+			.andExpect(status().isOk())
+			.andExpect(model().attribute("name", "helen"))
+			.andExpect(model().attributeExists("listVets"))
+			.andExpect(view().name("vets/vetList"));
+
+		// A name search must be backend-driven and must not fall back to the full list.
+		verify(this.vets).findByName(eq("helen"), any(Pageable.class));
+		verify(this.vets, never()).findAll(any(Pageable.class));
+	}
+
+	@Test
+	void showVetListWithBlankNameShowsFullList() throws Exception {
+		// An all-whitespace term is treated as an empty search: the full paged list is
+		// used, exactly as before (Scenario 4).
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html").param("name", "   "))
+			.andExpect(status().isOk())
+			.andExpect(model().attribute("name", ""))
+			.andExpect(view().name("vets/vetList"));
+
+		verify(this.vets).findAll(any(Pageable.class));
+		verify(this.vets, never()).findByName(any(String.class), any(Pageable.class));
+	}
+
+	@Test
+	void showVetListWithNoMatchesShowsEmptyState() throws Exception {
+		given(this.vets.findByName(eq("zzz"), any(Pageable.class))).willReturn(new PageImpl<Vet>(Lists.newArrayList()));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?name=zzz"))
+			.andExpect(status().isOk())
+			.andExpect(model().attribute("name", "zzz"))
+			.andExpect(model().attribute("listVets", org.hamcrest.Matchers.empty()))
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("No vets found")))
+			.andExpect(view().name("vets/vetList"));
 	}
 
 	@Test
