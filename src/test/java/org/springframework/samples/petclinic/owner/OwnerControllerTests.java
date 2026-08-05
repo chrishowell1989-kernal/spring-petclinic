@@ -142,6 +142,24 @@ class OwnerControllerTests {
 	}
 
 	@Test
+	void initFindFormShowsAllOwnersForLiveFiltering() throws Exception {
+		Owner betty = new Owner();
+		betty.setId(2);
+		betty.setFirstName("Betty");
+		betty.setLastName("Davis");
+		betty.setAddress("638 Cardinal Ave.");
+		betty.setCity("Sun Prairie");
+		betty.setTelephone("6085551749");
+		given(this.owners.findAll()).willReturn(List.of(george(), betty));
+
+		mockMvc.perform(get("/owners/find"))
+			.andExpect(status().isOk())
+			.andExpect(model().attributeExists("listOwners"))
+			.andExpect(model().attribute("listOwners", hasSize(2)))
+			.andExpect(view().name("owners/findOwners"));
+	}
+
+	@Test
 	void processFindFormSuccess() throws Exception {
 		Page<Owner> tasks = new PageImpl<>(List.of(george(), new Owner()));
 		when(this.owners.findByLastNameStartingWith(anyString(), any(Pageable.class))).thenReturn(tasks);

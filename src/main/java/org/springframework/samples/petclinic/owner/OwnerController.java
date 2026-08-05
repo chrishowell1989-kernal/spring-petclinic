@@ -87,7 +87,10 @@ class OwnerController {
 	}
 
 	@GetMapping("/owners/find")
-	public String initFindForm() {
+	public String initFindForm(Model model) {
+		// provide the full owner list so the Find Owners page can filter it live
+		// (client-side, by name) without an extra round-trip to the server
+		model.addAttribute("listOwners", this.owners.findAll());
 		return "owners/findOwners";
 	}
 
