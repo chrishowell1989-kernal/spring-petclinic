@@ -11,65 +11,69 @@
       <input type="text" class="form-control" id="vet-search-input" name="name" th:value="${name}"
         th:placeholder="#{searchVetsByName}" size="30" maxlength="80" autocomplete="off" />
       <button type="submit" class="btn btn-primary" id="vet-search-submit" th:text="#{search}">Search</button>
-      <a class="btn btn-default" id="vet-search-clear" th:href="@{/vets.html}" th:if="${!name.isEmpty()}"
-        th:title="#{clearSearch}" th:text="#{clearSearch}">Clear</a>
+      <a class="btn btn-default" id="vet-search-clear" th:href="@{/vets.html}"
+        th:classappend="${name.isEmpty()} ? 'd-none'" th:title="#{clearSearch}" th:text="#{clearSearch}">Clear</a>
     </div>
   </form>
 
-  <table id="vets" class="table table-striped" th:if="${!listVets.isEmpty()}">
-    <thead>
-      <tr>
-        <th th:text="#{name}">Name</th>
-        <th th:text="#{specialties}">Specialties</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr th:each="vet : ${listVets}">
-        <td th:text="${vet.firstName + ' ' + vet.lastName}"></td>
-        <td>
-          <span th:each="specialty : ${vet.specialties}" th:text="${specialty.name + ' '}" /> <span
-            th:if="${vet.nrOfSpecialties == 0}" th:text="#{none}">none</span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div id="vet-search-results" th:fragment="results">
+    <table id="vets" class="table table-striped" th:if="${!listVets.isEmpty()}">
+      <thead>
+        <tr>
+          <th th:text="#{name}">Name</th>
+          <th th:text="#{specialties}">Specialties</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="vet : ${listVets}">
+          <td th:text="${vet.firstName + ' ' + vet.lastName}"></td>
+          <td>
+            <span th:each="specialty : ${vet.specialties}" th:text="${specialty.name + ' '}" /> <span
+              th:if="${vet.nrOfSpecialties == 0}" th:text="#{none}">none</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-  <p id="vets-empty" class="alert alert-info" th:if="${listVets.isEmpty()}" th:text="#{noVetsFound}">No vets found</p>
+    <p id="vets-empty" class="alert alert-info" th:if="${listVets.isEmpty()}" th:text="#{noVetsFound}">No vets found
+    </p>
 
-  <div th:if="${totalPages > 1}">
-    <span th:text="#{pages}">Pages:</span>
-    <span>[</span>
-    <span th:each="i: ${#numbers.sequence(1, totalPages)}">
-      <a th:if="${currentPage != i}" th:href="@{/vets.html(page=${i},name=${name})}">[[${i}]]</a>
-      <span th:unless="${currentPage != i}">[[${i}]]</span>
-    </span>
-    <span>]&nbsp;</span>
-    <span>
-      <a th:if="${currentPage > 1}" th:href="@{/vets.html(page=1,name=${name})}" th:title="#{first}"
-        class="fa fa-fast-backward"></a>
-      <span th:unless="${currentPage > 1}" th:title="#{first}" class="fa fa-fast-backward"></span>
-    </span>
-    <span>
-      <a th:if="${currentPage > 1}" th:href="@{/vets.html(page=${currentPage - 1},name=${name})}" th:title="#{previous}"
-        class="fa fa-step-backward"></a>
-      <span th:unless="${currentPage > 1}" th:title="#{previous}" class="fa fa-step-backward"></span>
-    </span>
-    <span>
-      <a th:if="${currentPage < totalPages}" th:href="@{/vets.html(page=${currentPage + 1},name=${name})}"
-        th:title="#{next}" class="fa fa-step-forward"></a>
-      <span th:unless="${currentPage < totalPages}" th:title="#{next}" class="fa fa-step-forward"></span>
-    </span>
-    <span>
-      <a th:if="${currentPage < totalPages}" th:href="@{/vets.html(page=${totalPages},name=${name})}" th:title="#{last}"
-        class="fa fa-fast-forward"></a>
-      <span th:unless="${currentPage < totalPages}" th:title="#{last}" class="fa fa-fast-forward"></span>
-    </span>
+    <div th:if="${totalPages > 1}">
+      <span th:text="#{pages}">Pages:</span>
+      <span>[</span>
+      <span th:each="i: ${#numbers.sequence(1, totalPages)}">
+        <a th:if="${currentPage != i}" th:href="@{/vets.html(page=${i},name=${name})}">[[${i}]]</a>
+        <span th:unless="${currentPage != i}">[[${i}]]</span>
+      </span>
+      <span>]&nbsp;</span>
+      <span>
+        <a th:if="${currentPage > 1}" th:href="@{/vets.html(page=1,name=${name})}" th:title="#{first}"
+          class="fa fa-fast-backward"></a>
+        <span th:unless="${currentPage > 1}" th:title="#{first}" class="fa fa-fast-backward"></span>
+      </span>
+      <span>
+        <a th:if="${currentPage > 1}" th:href="@{/vets.html(page=${currentPage - 1},name=${name})}"
+          th:title="#{previous}" class="fa fa-step-backward"></a>
+        <span th:unless="${currentPage > 1}" th:title="#{previous}" class="fa fa-step-backward"></span>
+      </span>
+      <span>
+        <a th:if="${currentPage < totalPages}" th:href="@{/vets.html(page=${currentPage + 1},name=${name})}"
+          th:title="#{next}" class="fa fa-step-forward"></a>
+        <span th:unless="${currentPage < totalPages}" th:title="#{next}" class="fa fa-step-forward"></span>
+      </span>
+      <span>
+        <a th:if="${currentPage < totalPages}" th:href="@{/vets.html(page=${totalPages},name=${name})}"
+          th:title="#{last}" class="fa fa-fast-forward"></a>
+        <span th:unless="${currentPage < totalPages}" th:title="#{last}" class="fa fa-fast-forward"></span>
+      </span>
+    </div>
   </div>
 
   <script th:inline="none">
     (function () {
       const form = document.getElementById('vet-search-form');
       const input = document.getElementById('vet-search-input');
+      const clearLink = document.getElementById('vet-search-clear');
       if (!form || !input) {
         return;
       }
@@ -77,7 +81,22 @@
       input.addEventListener('input', function () {
         clearTimeout(timer);
         timer = setTimeout(function () {
-          form.submit();
+          const url = new URL(form.action, window.location.href);
+          url.searchParams.set('name', input.value);
+          fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) { return response.text(); })
+            .then(function (html) {
+              const current = document.getElementById('vet-search-results');
+              const parsed = new DOMParser().parseFromString(html, 'text/html');
+              const fresh = parsed.getElementById('vet-search-results');
+              if (current && fresh) {
+                current.replaceWith(fresh);
+              }
+              window.history.replaceState(null, '', url);
+              if (clearLink) {
+                clearLink.classList.toggle('d-none', input.value.trim().length === 0);
+              }
+            });
         }, 300);
       });
     })();

@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -43,22 +44,27 @@ class VetController {
 
 	@GetMapping("/vets.html")
 	public String showVetList(@RequestParam(defaultValue = "1") int page,
-			@RequestParam(name = "name", defaultValue = "") String name, Model model) {
+			@RequestParam(name = "name", defaultValue = "") String name,
+			@RequestHeader(name = "X-Requested-With", required = false) String requestedWith, Model model) {
 		// A blank search term (or an all-whitespace one) falls back to the full paged
 		// list, so the page behaves exactly as before when no filter is applied.
 		String searchName = name.strip();
 		Page<Vet> paginated = findPaginated(page, searchName);
 		model.addAttribute("name", searchName);
-		return addPaginationModel(page, paginated, model);
+		// The search box submits via a background fetch (see vetList.html) so that
+		// re-rendering the results on each keystroke doesn't steal focus from the
+		// input by replacing the whole page; only the results fragment is returned.
+		boolean isAjax = "XMLHttpRequest".equals(requestedWith);
+		return addPaginationModel(page, paginated, model, isAjax);
 	}
 
-	private String addPaginationModel(int page, Page<Vet> paginated, Model model) {
+	private String addPaginationModel(int page, Page<Vet> paginated, Model model, boolean isAjax) {
 		List<Vet> listVets = paginated.getContent();
 		model.addAttribute("currentPage", page);
 		model.addAttribute("totalPages", paginated.getTotalPages());
 		model.addAttribute("totalItems", paginated.getTotalElements());
 		model.addAttribute("listVets", listVets);
-		return "vets/vetList";
+		return isAjax ? "vets/vetList :: results" : "vets/vetList";
 	}
 
 	private Page<Vet> findPaginated(int page, String name) {
