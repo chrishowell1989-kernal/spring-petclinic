@@ -21,6 +21,11 @@
 # from the pull_request_review event, so it's parsed back out of the head branch name (which
 # jira-agentic-workflow.yml names agentic/<issue key>-<slug>).
 #
+# At the end of the run, "Transition Jira issue to QA Passed" moves the issue on to whichever
+# available transition has "pass" in the name, same lookup-by-regex pattern as the QA
+# transition above. Runs regardless of whether Claude produced new e2e test files, since the
+# absence of new coverage isn't itself a QA failure signal in this demo.
+#
 # Security note: PR title/body/branch refs are read via job-level env: and consumed as $VAR
 # inside scripts, never interpolated directly via ${{ }} in a run: block — same rationale as
 # the other agentic workflows.
@@ -175,3 +180,34 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr comment "$PR_NUMBER" --body "Added Playwright e2e coverage for this change, per the QA follow-up on human approval. See the latest commit."
+
+      - name: Transition Jira issue to QA Passed
+        if: ${{ env.JIRA_CONFIGURED == 'true' }}
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          transitions=$(curl -sS -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Accept: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions")
+
+          transition_id=$(jq -r '.transitions[] | select(.name | test("pass"; "i")) | .id' <<< "$transitions" | head -n1)
+
+          if [ -z "$transition_id" ]; then
+            available=$(jq -r '[.transitions[].name] | join(", ")' <<< "$transitions")
+            echo "::warning::No transition matching \"pass\" found for $ISSUE_KEY — leaving its status as-is. Available transitions: $available"
+            exit 0
+          fi
+
+          http_code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
+            -u "${JIRA_EMAIL}:${JIRA_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "${JIRA_BASE_URL}/rest/api/3/issue/${ISSUE_KEY}/transitions" \
+            -d "{\"transition\": {\"id\": \"${transition_id}\"}}")
+
+          if [ "$http_code" != "204" ]; then
+            echo "::warning::Failed to transition $ISSUE_KEY to QA Passed (HTTP $http_code)."
+          fi
