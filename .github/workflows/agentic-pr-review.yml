@@ -145,8 +145,11 @@ jobs:
           PROMPT_EOF
           } > /tmp/review-prompt.txt
 
-          claude --max-turns 20 -p "$(cat /tmp/review-prompt.txt)" > /tmp/review-output.txt
-          cat /tmp/review-output.txt
+          claude --max-turns 20 --verbose --output-format stream-json \
+            -p "$(cat /tmp/review-prompt.txt)" \
+            | tee /tmp/review-stream.jsonl
+
+          jq -r 'select(.type == "result") | .result' /tmp/review-stream.jsonl > /tmp/review-output.txt
 
       - name: Post review comment
         env:

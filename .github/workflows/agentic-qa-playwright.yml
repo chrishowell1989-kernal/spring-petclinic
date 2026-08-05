@@ -149,9 +149,11 @@ jobs:
           PROMPT_EOF
           } > /tmp/qa-prompt.txt
 
-          claude --dangerously-skip-permissions --max-turns 40 -p "$(cat /tmp/qa-prompt.txt)" \
-            > /tmp/qa-output.txt
-          cat /tmp/qa-output.txt
+          claude --dangerously-skip-permissions --max-turns 40 --verbose --output-format stream-json \
+            -p "$(cat /tmp/qa-prompt.txt)" \
+            | tee /tmp/qa-stream.jsonl
+
+          jq -r 'select(.type == "result") | .result' /tmp/qa-stream.jsonl > /tmp/qa-output.txt
 
       - name: Commit and push e2e coverage
         run: |

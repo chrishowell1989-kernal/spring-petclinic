@@ -228,8 +228,11 @@ jobs:
           PROMPT_EOF
           } > /tmp/claude-prompt.txt
 
-          claude --dangerously-skip-permissions --max-turns 40 -p "$(cat /tmp/claude-prompt.txt)" \
-            | tee /tmp/claude-output.txt
+          claude --dangerously-skip-permissions --max-turns 40 --verbose --output-format stream-json \
+            -p "$(cat /tmp/claude-prompt.txt)" \
+            | tee /tmp/claude-stream.jsonl
+
+          jq -r 'select(.type == "result") | .result' /tmp/claude-stream.jsonl > /tmp/claude-output.txt
 
       - name: Commit and push changes
         run: |
