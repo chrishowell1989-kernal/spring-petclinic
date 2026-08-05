@@ -32,7 +32,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -87,6 +90,54 @@ class VetControllerTests {
 			.andExpect(model().attributeExists("listVets"))
 			.andExpect(view().name("vets/vetList"));
 
+	}
+
+	@Test
+	void showVetListHtmlWithoutSearchTermUsesFullList() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?page=1"))
+			.andExpect(status().isOk())
+			.andExpect(model().attribute("name", ""))
+			.andExpect(view().name("vets/vetList"));
+
+		verify(this.vets).findAll(any(Pageable.class));
+		verify(this.vets, never()).findByName(any(String.class), any(Pageable.class));
+	}
+
+	@Test
+	void showVetListHtmlWithSearchTermFiltersServerSide() throws Exception {
+		given(this.vets.findByName(eq("hel"), any(Pageable.class)))
+			.willReturn(new PageImpl<Vet>(Lists.newArrayList(helen())));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?page=1&name=hel"))
+			.andExpect(status().isOk())
+			.andExpect(model().attribute("name", "hel"))
+			.andExpect(model().attribute("totalItems", 1L))
+			.andExpect(model().attributeExists("listVets"))
+			.andExpect(view().name("vets/vetList"));
+
+		verify(this.vets).findByName(eq("hel"), any(Pageable.class));
+		verify(this.vets, never()).findAll(any(Pageable.class));
+	}
+
+	@Test
+	void showVetListHtmlWithBlankSearchTermUsesFullList() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?page=1&name=   "))
+			.andExpect(status().isOk())
+			.andExpect(view().name("vets/vetList"));
+
+		verify(this.vets).findAll(any(Pageable.class));
+		verify(this.vets, never()).findByName(any(String.class), any(Pageable.class));
+	}
+
+	@Test
+	void showVetListHtmlWithNoMatchesShowsEmptyList() throws Exception {
+		given(this.vets.findByName(eq("zzz"), any(Pageable.class))).willReturn(new PageImpl<Vet>(Lists.newArrayList()));
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?page=1&name=zzz"))
+			.andExpect(status().isOk())
+			.andExpect(model().attribute("name", "zzz"))
+			.andExpect(model().attribute("totalItems", 0L))
+			.andExpect(view().name("vets/vetList"));
 	}
 
 	@Test

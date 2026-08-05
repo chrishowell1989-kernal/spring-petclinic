@@ -30,6 +30,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.samples.petclinic.owner.Owner;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
@@ -212,6 +213,36 @@ class ClinicServiceTests {
 		assertThat(vet.getNrOfSpecialties()).isEqualTo(2);
 		assertThat(vet.getSpecialties().get(0).getName()).isEqualTo("dentistry");
 		assertThat(vet.getSpecialties().get(1).getName()).isEqualTo("surgery");
+	}
+
+	@Test
+	void shouldFindVetsByNameCaseInsensitivePartialMatch() {
+		// partial, case-insensitive match on last name
+		Page<Vet> results = this.vets.findByName("lea", pageable);
+		assertThat(results).extracting(Vet::getLastName).containsExactly("Leary");
+
+		// match on first name
+		results = this.vets.findByName("hEl", pageable);
+		assertThat(results).extracting(Vet::getLastName).containsExactly("Leary");
+
+		// match across the full "first last" name
+		results = this.vets.findByName("Helen Lea", pageable);
+		assertThat(results).extracting(Vet::getLastName).containsExactly("Leary");
+	}
+
+	@Test
+	void shouldReturnEmptyPageWhenNoVetNameMatches() {
+		Page<Vet> results = this.vets.findByName("zzznomatch", pageable);
+		assertThat(results).isEmpty();
+	}
+
+	@Test
+	void shouldPaginateVetNameSearchResults() {
+		// "e" appears in several vet names; verify results paginate the same way
+		Page<Vet> firstPage = this.vets.findByName("e", PageRequest.of(0, 2));
+		assertThat(firstPage.getContent()).hasSize(2);
+		assertThat(firstPage.getTotalElements()).isGreaterThan(2);
+		assertThat(firstPage.getTotalPages()).isGreaterThan(1);
 	}
 
 	@Test

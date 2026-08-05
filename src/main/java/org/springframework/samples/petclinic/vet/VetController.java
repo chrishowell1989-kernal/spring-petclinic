@@ -42,24 +42,30 @@ class VetController {
 	}
 
 	@GetMapping("/vets.html")
-	public String showVetList(@RequestParam(defaultValue = "1") int page, Model model) {
-		Page<Vet> paginated = findPaginated(page);
-		return addPaginationModel(page, paginated, model);
+	public String showVetList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "") String name,
+			Model model) {
+		Page<Vet> paginated = findPaginated(page, name);
+		return addPaginationModel(page, paginated, name, model);
 	}
 
-	private String addPaginationModel(int page, Page<Vet> paginated, Model model) {
+	private String addPaginationModel(int page, Page<Vet> paginated, String name, Model model) {
 		List<Vet> listVets = paginated.getContent();
 		model.addAttribute("currentPage", page);
 		model.addAttribute("totalPages", paginated.getTotalPages());
 		model.addAttribute("totalItems", paginated.getTotalElements());
 		model.addAttribute("listVets", listVets);
+		model.addAttribute("name", name);
 		return "vets/vetList";
 	}
 
-	private Page<Vet> findPaginated(int page) {
+	private Page<Vet> findPaginated(int page, String name) {
 		int pageSize = 5;
 		Pageable pageable = PageRequest.of(page - 1, pageSize);
-		return vetRepository.findAll(pageable);
+		String searchTerm = (name == null) ? "" : name.strip();
+		if (searchTerm.isEmpty()) {
+			return vetRepository.findAll(pageable);
+		}
+		return vetRepository.findByName(searchTerm, pageable);
 	}
 
 	@GetMapping({ "/vets" })
