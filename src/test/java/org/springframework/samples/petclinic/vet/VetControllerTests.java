@@ -31,6 +31,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -87,6 +88,22 @@ class VetControllerTests {
 			.andExpect(model().attributeExists("listVets"))
 			.andExpect(view().name("vets/vetList"));
 
+	}
+
+	@Test
+	void showVetListRendersSearchBar() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?page=1"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("id=\"vet-search\"")))
+			.andExpect(content().string(containsString("Search by name")));
+	}
+
+	@Test
+	void showVetListRendersEmptyStateMessage() throws Exception {
+		mockMvc.perform(MockMvcRequestBuilders.get("/vets.html?page=1"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("id=\"vets-no-results\"")))
+			.andExpect(content().string(containsString("No vets found")));
 	}
 
 	@Test
