@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "홈",
+    "findOwners": "주인 찾기",
+    "vets": "수의사",
+    "error": "오류"
+  },
+  "home": {
+    "welcome": "환영합니다",
+    "tagline": "환자를 돌보는 데 필요한 모든 것을 한곳에서.",
+    "findOwnersCard": "주인 찾기",
+    "vetsCard": "수의사",
+    "addOwnerCard": "주인 추가"
+  },
+  "common": {
+    "firstName": "이름",
+    "lastName": "성",
+    "address": "주소",
+    "city": "도시",
+    "telephone": "전화번호",
+    "name": "이름",
+    "type": "종류",
+    "birthDate": "생년월일",
+    "date": "날짜",
+    "description": "설명",
+    "none": "없음",
+    "save": "저장",
+    "cancel": "취소",
+    "loading": "로딩 중...",
+    "pets": "반려동물",
+    "owner": "주인",
+    "specialties": "전문 분야"
+  },
+  "pagination": {
+    "first": "처음",
+    "previous": "이전",
+    "next": "다음",
+    "last": "마지막"
+  },
+  "notFound": {
+    "title": "페이지를 찾을 수 없습니다",
+    "message": "찾으시는 페이지가 존재하지 않습니다."
+  },
+  "error": {
+    "title": "문제가 발생했습니다...",
+    "404": "요청한 페이지를 찾을 수 없습니다.",
+    "500": "내부 서버 오류가 발생했습니다.",
+    "general": "예기치 않은 오류가 발생했습니다.",
+    "trigger": "런타임 예외 발생시키기"
+  },
+  "owners": {
+    "findTitle": "주인 찾기",
+    "lastNameLabel": "성",
+    "searchButton": "주인 찾기",
+    "addOwnerButton": "주인 추가",
+    "notFound": "을(를) 찾을 수 없습니다",
+    "listTitle": "주인 목록",
+    "tableAddress": "주소",
+    "tablePets": "반려동물",
+    "detailsTitle": "주인 정보",
+    "editOwnerButton": "주인 수정",
+    "addNewPetButton": "새 반려동물 추가",
+    "petsAndVisits": "반려동물 및 방문 기록",
+    "editPetButton": "반려동물 수정",
+    "addVisitButton": "방문 추가",
+    "previousVisits": "이전 방문 기록",
+    "noVisits": "등록된 방문 기록이 없습니다",
+    "ownerSaved": "주인 정보가 저장되었습니다.",
+    "ownerAdded": "새 주인이 추가되었습니다."
+  },
+  "ownerForm": {
+    "newTitle": "새 주인",
+    "editTitle": "주인 수정",
+    "submitNew": "주인 추가",
+    "submitEdit": "주인 업데이트"
+  },
+  "petForm": {
+    "newTitle": "새 반려동물",
+    "editTitle": "반려동물 수정",
+    "typeLabel": "종류",
+    "submitNew": "반려동물 추가",
+    "submitEdit": "반려동물 업데이트",
+    "petSaved": "반려동물 정보가 저장되었습니다."
+  },
+  "visitForm": {
+    "title": "새 방문",
+    "submit": "방문 추가",
+    "visitAdded": "방문이 예약되었습니다."
+  }
+}

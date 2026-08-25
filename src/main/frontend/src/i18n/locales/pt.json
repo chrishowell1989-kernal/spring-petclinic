@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "Início",
+    "findOwners": "Procurar donos",
+    "vets": "Veterinários",
+    "error": "Erro"
+  },
+  "home": {
+    "welcome": "Bem-vindo",
+    "tagline": "Tudo o que precisa para cuidar dos seus pacientes, num só lugar.",
+    "findOwnersCard": "Procurar donos",
+    "vetsCard": "Veterinários",
+    "addOwnerCard": "Adicionar dono"
+  },
+  "common": {
+    "firstName": "Nome",
+    "lastName": "Apelido",
+    "address": "Morada",
+    "city": "Cidade",
+    "telephone": "Telefone",
+    "name": "Nome",
+    "type": "Tipo",
+    "birthDate": "Data de nascimento",
+    "date": "Data",
+    "description": "Descrição",
+    "none": "nenhuma",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "A carregar...",
+    "pets": "Animais",
+    "owner": "Dono",
+    "specialties": "Especialidades"
+  },
+  "pagination": {
+    "first": "Primeira",
+    "previous": "Anterior",
+    "next": "Seguinte",
+    "last": "Última"
+  },
+  "notFound": {
+    "title": "Página não encontrada",
+    "message": "A página que procura não existe."
+  },
+  "error": {
+    "title": "Aconteceu algo...",
+    "404": "A página solicitada não foi encontrada.",
+    "500": "Ocorreu um erro interno do servidor.",
+    "general": "Ocorreu um erro inesperado.",
+    "trigger": "Disparar uma exceção em tempo de execução"
+  },
+  "owners": {
+    "findTitle": "Procurar dono",
+    "lastNameLabel": "Apelido",
+    "searchButton": "Procurar dono",
+    "addOwnerButton": "Adicionar dono",
+    "notFound": "não foi encontrado",
+    "listTitle": "Donos",
+    "tableAddress": "Morada",
+    "tablePets": "Animais",
+    "detailsTitle": "Informação do dono",
+    "editOwnerButton": "Editar dono",
+    "addNewPetButton": "Adicionar novo animal",
+    "petsAndVisits": "Animais e visitas",
+    "editPetButton": "Editar animal",
+    "addVisitButton": "Adicionar visita",
+    "previousVisits": "Visitas anteriores",
+    "noVisits": "Sem visitas registadas",
+    "ownerSaved": "Os dados do dono foram guardados.",
+    "ownerAdded": "Novo dono foi adicionado."
+  },
+  "ownerForm": {
+    "newTitle": "Novo dono",
+    "editTitle": "Editar dono",
+    "submitNew": "Adicionar dono",
+    "submitEdit": "Atualizar dono"
+  },
+  "petForm": {
+    "newTitle": "Novo animal",
+    "editTitle": "Editar animal",
+    "typeLabel": "Tipo",
+    "submitNew": "Adicionar animal",
+    "submitEdit": "Atualizar animal",
+    "petSaved": "Os dados do animal foram guardados."
+  },
+  "visitForm": {
+    "title": "Nova visita",
+    "submit": "Adicionar visita",
+    "visitAdded": "A sua visita foi marcada."
+  }
+}

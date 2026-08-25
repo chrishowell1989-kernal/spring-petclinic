@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "findOwners": "Sahip bul",
+    "vets": "Veterinerler",
+    "error": "Hata"
+  },
+  "home": {
+    "welcome": "Hoş geldiniz",
+    "tagline": "Hastalarınıza bakmak için ihtiyacınız olan her şey, tek bir yerde.",
+    "findOwnersCard": "Sahip bul",
+    "vetsCard": "Veterinerler",
+    "addOwnerCard": "Sahip ekle"
+  },
+  "common": {
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "address": "Adres",
+    "city": "Şehir",
+    "telephone": "Telefon",
+    "name": "Ad",
+    "type": "Tür",
+    "birthDate": "Doğum Tarihi",
+    "date": "Tarih",
+    "description": "Açıklama",
+    "none": "yok",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "loading": "Yükleniyor...",
+    "pets": "Evcil Hayvanlar",
+    "owner": "Sahip",
+    "specialties": "Uzmanlıklar"
+  },
+  "pagination": {
+    "first": "İlk",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "last": "Son"
+  },
+  "notFound": {
+    "title": "Sayfa bulunamadı",
+    "message": "Aradığınız sayfa mevcut değil."
+  },
+  "error": {
+    "title": "Bir şeyler oldu...",
+    "404": "İstenen sayfa bulunamadı.",
+    "500": "Bir dahili sunucu hatası oluştu.",
+    "general": "Beklenmeyen bir hata oluştu.",
+    "trigger": "Bir çalışma zamanı istisnası tetikle"
+  },
+  "owners": {
+    "findTitle": "Sahip Bul",
+    "lastNameLabel": "Soyad",
+    "searchButton": "Sahip Bul",
+    "addOwnerButton": "Sahip Ekle",
+    "notFound": "bulunamadı",
+    "listTitle": "Sahipler",
+    "tableAddress": "Adres",
+    "tablePets": "Evcil Hayvanlar",
+    "detailsTitle": "Sahip Bilgisi",
+    "editOwnerButton": "Sahibi Düzenle",
+    "addNewPetButton": "Yeni Evcil Hayvan Ekle",
+    "petsAndVisits": "Evcil Hayvanlar ve Ziyaretler",
+    "editPetButton": "Evcil Hayvanı Düzenle",
+    "addVisitButton": "Ziyaret Ekle",
+    "previousVisits": "Önceki Ziyaretler",
+    "noVisits": "Kayıtlı ziyaret yok",
+    "ownerSaved": "Sahip bilgileri kaydedildi.",
+    "ownerAdded": "Yeni sahip eklendi."
+  },
+  "ownerForm": {
+    "newTitle": "Yeni Sahip",
+    "editTitle": "Sahibi Düzenle",
+    "submitNew": "Sahip Ekle",
+    "submitEdit": "Sahibi Güncelle"
+  },
+  "petForm": {
+    "newTitle": "Yeni Evcil Hayvan",
+    "editTitle": "Evcil Hayvanı Düzenle",
+    "typeLabel": "Tür",
+    "submitNew": "Evcil Hayvan Ekle",
+    "submitEdit": "Evcil Hayvanı Güncelle",
+    "petSaved": "Evcil hayvan bilgileri kaydedildi."
+  },
+  "visitForm": {
+    "title": "Yeni Ziyaret",
+    "submit": "Ziyaret Ekle",
+    "visitAdded": "Ziyaretiniz kaydedildi."
+  }
+}

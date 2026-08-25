@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "होम",
+    "findOwners": "मालिक खोजें",
+    "vets": "पशु चिकित्सक",
+    "error": "त्रुटि"
+  },
+  "home": {
+    "welcome": "स्वागत है",
+    "tagline": "अपने मरीजों की देखभाल के लिए आवश्यक सब कुछ, एक ही जगह पर।",
+    "findOwnersCard": "मालिक खोजें",
+    "vetsCard": "पशु चिकित्सक",
+    "addOwnerCard": "मालिक जोड़ें"
+  },
+  "common": {
+    "firstName": "पहला नाम",
+    "lastName": "अंतिम नाम",
+    "address": "पता",
+    "city": "शहर",
+    "telephone": "फ़ोन नंबर",
+    "name": "नाम",
+    "type": "प्रकार",
+    "birthDate": "जन्म तिथि",
+    "date": "तारीख",
+    "description": "विवरण",
+    "none": "कोई नहीं",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "loading": "लोड हो रहा है...",
+    "pets": "पालतू जानवर",
+    "owner": "मालिक",
+    "specialties": "विशेषज्ञताएं"
+  },
+  "pagination": {
+    "first": "पहला",
+    "previous": "पिछला",
+    "next": "अगला",
+    "last": "अंतिम"
+  },
+  "notFound": {
+    "title": "पृष्ठ नहीं मिला",
+    "message": "आपके द्वारा खोजा गया पृष्ठ मौजूद नहीं है।"
+  },
+  "error": {
+    "title": "कुछ हुआ...",
+    "404": "अनुरोधित पृष्ठ नहीं मिला।",
+    "500": "एक आंतरिक सर्वर त्रुटि हुई।",
+    "general": "एक अप्रत्याशित त्रुटि हुई।",
+    "trigger": "एक रनटाइम अपवाद उत्पन्न करें"
+  },
+  "owners": {
+    "findTitle": "मालिक खोजें",
+    "lastNameLabel": "अंतिम नाम",
+    "searchButton": "मालिक खोजें",
+    "addOwnerButton": "मालिक जोड़ें",
+    "notFound": "नहीं मिला",
+    "listTitle": "मालिक",
+    "tableAddress": "पता",
+    "tablePets": "पालतू जानवर",
+    "detailsTitle": "मालिक की जानकारी",
+    "editOwnerButton": "मालिक संपादित करें",
+    "addNewPetButton": "नया पालतू जानवर जोड़ें",
+    "petsAndVisits": "पालतू जानवर और मुलाकातें",
+    "editPetButton": "पालतू जानवर संपादित करें",
+    "addVisitButton": "मुलाकात जोड़ें",
+    "previousVisits": "पिछली मुलाकातें",
+    "noVisits": "कोई मुलाकात दर्ज नहीं है",
+    "ownerSaved": "मालिक का विवरण सहेजा गया है।",
+    "ownerAdded": "नया मालिक जोड़ा गया है।"
+  },
+  "ownerForm": {
+    "newTitle": "नया मालिक",
+    "editTitle": "मालिक संपादित करें",
+    "submitNew": "मालिक जोड़ें",
+    "submitEdit": "मालिक अपडेट करें"
+  },
+  "petForm": {
+    "newTitle": "नया पालतू जानवर",
+    "editTitle": "पालतू जानवर संपादित करें",
+    "typeLabel": "प्रकार",
+    "submitNew": "पालतू जानवर जोड़ें",
+    "submitEdit": "पालतू जानवर अपडेट करें",
+    "petSaved": "पालतू जानवर का विवरण सहेजा गया है।"
+  },
+  "visitForm": {
+    "title": "नई मुलाकात",
+    "submit": "मुलाकात जोड़ें",
+    "visitAdded": "आपकी मुलाकात बुक हो गई है।"
+  }
+}

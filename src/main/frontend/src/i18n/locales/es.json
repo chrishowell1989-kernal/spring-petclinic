@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "findOwners": "Buscar propietarios",
+    "vets": "Veterinarios",
+    "error": "Error"
+  },
+  "home": {
+    "welcome": "Bienvenido",
+    "tagline": "Todo lo que necesita para cuidar de sus pacientes, en un solo lugar.",
+    "findOwnersCard": "Buscar propietarios",
+    "vetsCard": "Veterinarios",
+    "addOwnerCard": "Añadir propietario"
+  },
+  "common": {
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "address": "Dirección",
+    "city": "Ciudad",
+    "telephone": "Teléfono",
+    "name": "Nombre",
+    "type": "Tipo",
+    "birthDate": "Fecha de nacimiento",
+    "date": "Fecha",
+    "description": "Descripción",
+    "none": "ninguno",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "loading": "Cargando...",
+    "pets": "Mascotas",
+    "owner": "Propietario",
+    "specialties": "Especialidades"
+  },
+  "pagination": {
+    "first": "Primero",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "last": "Último"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "message": "La página que busca no existe."
+  },
+  "error": {
+    "title": "Algo pasó...",
+    "404": "La página solicitada no fue encontrada.",
+    "500": "Ocurrió un error interno del servidor.",
+    "general": "Ocurrió un error inesperado.",
+    "trigger": "Provocar una excepción en tiempo de ejecución"
+  },
+  "owners": {
+    "findTitle": "Buscar propietario",
+    "lastNameLabel": "Apellido",
+    "searchButton": "Buscar propietario",
+    "addOwnerButton": "Añadir propietario",
+    "notFound": "no ha sido encontrado",
+    "listTitle": "Propietarios",
+    "tableAddress": "Dirección",
+    "tablePets": "Mascotas",
+    "detailsTitle": "Información del propietario",
+    "editOwnerButton": "Editar propietario",
+    "addNewPetButton": "Agregar nueva mascota",
+    "petsAndVisits": "Mascotas y visitas",
+    "editPetButton": "Editar mascota",
+    "addVisitButton": "Agregar visita",
+    "previousVisits": "Visitas anteriores",
+    "noVisits": "No hay visitas registradas",
+    "ownerSaved": "Los datos del propietario han sido guardados.",
+    "ownerAdded": "Se ha añadido un nuevo propietario."
+  },
+  "ownerForm": {
+    "newTitle": "Nuevo propietario",
+    "editTitle": "Editar propietario",
+    "submitNew": "Añadir propietario",
+    "submitEdit": "Actualizar propietario"
+  },
+  "petForm": {
+    "newTitle": "Nueva mascota",
+    "editTitle": "Editar mascota",
+    "typeLabel": "Tipo",
+    "submitNew": "Agregar mascota",
+    "submitEdit": "Actualizar mascota",
+    "petSaved": "Los datos de la mascota han sido guardados."
+  },
+  "visitForm": {
+    "title": "Nueva visita",
+    "submit": "Agregar visita",
+    "visitAdded": "Su visita ha sido reservada."
+  }
+}

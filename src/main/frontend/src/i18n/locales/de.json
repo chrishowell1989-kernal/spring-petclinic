@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "findOwners": "Besitzer suchen",
+    "vets": "Tierärzte",
+    "error": "Fehler"
+  },
+  "home": {
+    "welcome": "Willkommen",
+    "tagline": "Alles, was Sie zur Betreuung Ihrer Patienten brauchen – an einem Ort.",
+    "findOwnersCard": "Besitzer suchen",
+    "vetsCard": "Tierärzte",
+    "addOwnerCard": "Besitzer hinzufügen"
+  },
+  "common": {
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "address": "Adresse",
+    "city": "Stadt",
+    "telephone": "Telefon",
+    "name": "Name",
+    "type": "Typ",
+    "birthDate": "Geburtsdatum",
+    "date": "Datum",
+    "description": "Beschreibung",
+    "none": "keine",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "loading": "Lädt...",
+    "pets": "Haustiere",
+    "owner": "Besitzer",
+    "specialties": "Fachgebiete"
+  },
+  "pagination": {
+    "first": "Erste",
+    "previous": "Vorherige",
+    "next": "Nächste",
+    "last": "Letzte"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "message": "Die gesuchte Seite existiert nicht."
+  },
+  "error": {
+    "title": "Etwas ist passiert...",
+    "404": "Die angeforderte Seite wurde nicht gefunden.",
+    "500": "Ein interner Serverfehler ist aufgetreten.",
+    "general": "Ein unerwarteter Fehler ist aufgetreten.",
+    "trigger": "Eine Laufzeitausnahme auslösen"
+  },
+  "owners": {
+    "findTitle": "Besitzer finden",
+    "lastNameLabel": "Nachname",
+    "searchButton": "Besitzer finden",
+    "addOwnerButton": "Besitzer hinzufügen",
+    "notFound": "wurde nicht gefunden",
+    "listTitle": "Besitzer",
+    "tableAddress": "Adresse",
+    "tablePets": "Haustiere",
+    "detailsTitle": "Besitzerinformationen",
+    "editOwnerButton": "Besitzer bearbeiten",
+    "addNewPetButton": "Neues Haustier hinzufügen",
+    "petsAndVisits": "Haustiere und Besuche",
+    "editPetButton": "Haustier bearbeiten",
+    "addVisitButton": "Besuch hinzufügen",
+    "previousVisits": "Frühere Besuche",
+    "noVisits": "Keine Besuche verzeichnet",
+    "ownerSaved": "Besitzerdaten wurden gespeichert.",
+    "ownerAdded": "Neuer Besitzer wurde hinzugefügt."
+  },
+  "ownerForm": {
+    "newTitle": "Neuer Besitzer",
+    "editTitle": "Besitzer bearbeiten",
+    "submitNew": "Besitzer hinzufügen",
+    "submitEdit": "Besitzer aktualisieren"
+  },
+  "petForm": {
+    "newTitle": "Neues Haustier",
+    "editTitle": "Haustier bearbeiten",
+    "typeLabel": "Typ",
+    "submitNew": "Haustier hinzufügen",
+    "submitEdit": "Haustier aktualisieren",
+    "petSaved": "Haustierdaten wurden gespeichert."
+  },
+  "visitForm": {
+    "title": "Neuer Besuch",
+    "submit": "Besuch hinzufügen",
+    "visitAdded": "Ihr Besuch wurde gebucht."
+  }
+}

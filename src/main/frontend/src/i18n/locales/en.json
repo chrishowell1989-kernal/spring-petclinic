@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "Home",
+    "findOwners": "Find owners",
+    "vets": "Veterinarians",
+    "error": "Error"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "tagline": "Everything you need to care for your patients, in one place.",
+    "findOwnersCard": "Find owners",
+    "vetsCard": "Veterinarians",
+    "addOwnerCard": "Add owner"
+  },
+  "common": {
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "address": "Address",
+    "city": "City",
+    "telephone": "Telephone",
+    "name": "Name",
+    "type": "Type",
+    "birthDate": "Birth Date",
+    "date": "Date",
+    "description": "Description",
+    "none": "none",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "pets": "Pets",
+    "owner": "Owner",
+    "specialties": "Specialties"
+  },
+  "pagination": {
+    "first": "First",
+    "previous": "Previous",
+    "next": "Next",
+    "last": "Last"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "message": "The page you're looking for doesn't exist."
+  },
+  "error": {
+    "title": "Something happened...",
+    "404": "The requested page was not found.",
+    "500": "An internal server error occurred.",
+    "general": "An unexpected error occurred.",
+    "trigger": "Trigger a runtime exception"
+  },
+  "owners": {
+    "findTitle": "Find Owner",
+    "lastNameLabel": "Last Name",
+    "searchButton": "Find Owner",
+    "addOwnerButton": "Add Owner",
+    "notFound": "has not been found",
+    "listTitle": "Owners",
+    "tableAddress": "Address",
+    "tablePets": "Pets",
+    "detailsTitle": "Owner Information",
+    "editOwnerButton": "Edit Owner",
+    "addNewPetButton": "Add New Pet",
+    "petsAndVisits": "Pets and Visits",
+    "editPetButton": "Edit Pet",
+    "addVisitButton": "Add Visit",
+    "previousVisits": "Previous Visits",
+    "noVisits": "No visits recorded",
+    "ownerSaved": "Owner details have been saved.",
+    "ownerAdded": "New owner has been added."
+  },
+  "ownerForm": {
+    "newTitle": "New Owner",
+    "editTitle": "Edit Owner",
+    "submitNew": "Add Owner",
+    "submitEdit": "Update Owner"
+  },
+  "petForm": {
+    "newTitle": "New Pet",
+    "editTitle": "Edit Pet",
+    "typeLabel": "Type",
+    "submitNew": "Add Pet",
+    "submitEdit": "Update Pet",
+    "petSaved": "Pet details have been saved."
+  },
+  "visitForm": {
+    "title": "New Visit",
+    "submit": "Add Visit",
+    "visitAdded": "Your visit has been booked."
+  }
+}

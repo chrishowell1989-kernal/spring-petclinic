@@ -15,61 +15,18 @@
  */
 package org.springframework.samples.petclinic.e2e;
 
-import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.BrowserType;
-import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Smoke-level end-to-end test driving a real (headless) browser against the app, as a
- * template for further Playwright-based E2E tests.
+ * Smoke-level end-to-end test driving a real (headless) browser against the app.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class HomePageE2ETests {
-
-	@LocalServerPort
-	int port;
-
-	private static Playwright playwright;
-
-	private static Browser browser;
-
-	private Page page;
-
-	@BeforeAll
-	static void launchBrowser() {
-		playwright = Playwright.create();
-		browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
-	}
-
-	@AfterAll
-	static void closeBrowser() {
-		browser.close();
-		playwright.close();
-	}
-
-	@BeforeEach
-	void newPage() {
-		page = browser.newPage();
-	}
-
-	@AfterEach
-	void closePage() {
-		page.close();
-	}
+class HomePageE2ETests extends PlaywrightTestSupport {
 
 	@Test
 	void homePageShowsWelcomeMessage() {
-		page.navigate("http://localhost:" + port + "/");
+		page.navigate(baseUrl() + "/");
 
 		assertThat(page.locator("h1").textContent()).isEqualTo("Welcome");
 	}

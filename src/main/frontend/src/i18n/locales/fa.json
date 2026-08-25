@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "خانه",
+    "findOwners": "جستجوی صاحبان",
+    "vets": "دامپزشکان",
+    "error": "خطا"
+  },
+  "home": {
+    "welcome": "خوش آمدید",
+    "tagline": "هر آنچه برای مراقبت از بیمارانتان نیاز دارید، در یک مکان.",
+    "findOwnersCard": "جستجوی صاحبان",
+    "vetsCard": "دامپزشکان",
+    "addOwnerCard": "افزودن صاحب"
+  },
+  "common": {
+    "firstName": "نام",
+    "lastName": "نام خانوادگی",
+    "address": "آدرس",
+    "city": "شهر",
+    "telephone": "تلفن",
+    "name": "نام",
+    "type": "نوع",
+    "birthDate": "تاریخ تولد",
+    "date": "تاریخ",
+    "description": "توضیحات",
+    "none": "هیچکدام",
+    "save": "ذخیره",
+    "cancel": "لغو",
+    "loading": "در حال بارگذاری...",
+    "pets": "حیوانات خانگی",
+    "owner": "صاحب",
+    "specialties": "تخصص‌ها"
+  },
+  "pagination": {
+    "first": "اولین",
+    "previous": "قبلی",
+    "next": "بعدی",
+    "last": "آخرین"
+  },
+  "notFound": {
+    "title": "صفحه پیدا نشد",
+    "message": "صفحه‌ای که به دنبال آن هستید وجود ندارد."
+  },
+  "error": {
+    "title": "مشکلی پیش آمد...",
+    "404": "صفحه درخواستی پیدا نشد.",
+    "500": "خطای داخلی سرور رخ داد.",
+    "general": "خطای غیرمنتظره‌ای رخ داد.",
+    "trigger": "ایجاد یک استثنای زمان اجرا"
+  },
+  "owners": {
+    "findTitle": "جستجوی صاحب",
+    "lastNameLabel": "نام خانوادگی",
+    "searchButton": "جستجوی صاحب",
+    "addOwnerButton": "افزودن صاحب",
+    "notFound": "پیدا نشد",
+    "listTitle": "صاحبان",
+    "tableAddress": "آدرس",
+    "tablePets": "حیوانات خانگی",
+    "detailsTitle": "اطلاعات صاحب",
+    "editOwnerButton": "ویرایش صاحب",
+    "addNewPetButton": "افزودن حیوان خانگی جدید",
+    "petsAndVisits": "حیوانات خانگی و ویزیت‌ها",
+    "editPetButton": "ویرایش حیوان خانگی",
+    "addVisitButton": "افزودن ویزیت",
+    "previousVisits": "ویزیت‌های قبلی",
+    "noVisits": "هیچ ویزیتی ثبت نشده است",
+    "ownerSaved": "اطلاعات صاحب ذخیره شد.",
+    "ownerAdded": "صاحب جدید اضافه شد."
+  },
+  "ownerForm": {
+    "newTitle": "صاحب جدید",
+    "editTitle": "ویرایش صاحب",
+    "submitNew": "افزودن صاحب",
+    "submitEdit": "به‌روزرسانی صاحب"
+  },
+  "petForm": {
+    "newTitle": "حیوان خانگی جدید",
+    "editTitle": "ویرایش حیوان خانگی",
+    "typeLabel": "نوع",
+    "submitNew": "افزودن حیوان خانگی",
+    "submitEdit": "به‌روزرسانی حیوان خانگی",
+    "petSaved": "اطلاعات حیوان خانگی ذخیره شد."
+  },
+  "visitForm": {
+    "title": "ویزیت جدید",
+    "submit": "افزودن ویزیت",
+    "visitAdded": "ویزیت شما رزرو شد."
+  }
+}

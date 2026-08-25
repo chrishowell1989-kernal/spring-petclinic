@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "findOwners": "飼い主を探す",
+    "vets": "獣医師",
+    "error": "エラー"
+  },
+  "home": {
+    "welcome": "ようこそ",
+    "tagline": "患者のケアに必要なすべてを、ここに。",
+    "findOwnersCard": "飼い主を探す",
+    "vetsCard": "獣医師",
+    "addOwnerCard": "飼い主を追加"
+  },
+  "common": {
+    "firstName": "名",
+    "lastName": "姓",
+    "address": "住所",
+    "city": "市区町村",
+    "telephone": "電話番号",
+    "name": "名前",
+    "type": "種類",
+    "birthDate": "生年月日",
+    "date": "日付",
+    "description": "説明",
+    "none": "なし",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "loading": "読み込み中...",
+    "pets": "ペット",
+    "owner": "飼い主",
+    "specialties": "専門分野"
+  },
+  "pagination": {
+    "first": "最初",
+    "previous": "前へ",
+    "next": "次へ",
+    "last": "最後"
+  },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "message": "お探しのページは存在しません。"
+  },
+  "error": {
+    "title": "問題が発生しました...",
+    "404": "要求されたページが見つかりませんでした。",
+    "500": "内部サーバーエラーが発生しました。",
+    "general": "予期しないエラーが発生しました。",
+    "trigger": "ランタイム例外を発生させる"
+  },
+  "owners": {
+    "findTitle": "飼い主を探す",
+    "lastNameLabel": "姓",
+    "searchButton": "飼い主を探す",
+    "addOwnerButton": "飼い主を追加",
+    "notFound": "が見つかりませんでした",
+    "listTitle": "飼い主一覧",
+    "tableAddress": "住所",
+    "tablePets": "ペット",
+    "detailsTitle": "飼い主情報",
+    "editOwnerButton": "飼い主を編集",
+    "addNewPetButton": "新しいペットを追加",
+    "petsAndVisits": "ペットと診察",
+    "editPetButton": "ペットを編集",
+    "addVisitButton": "診察を追加",
+    "previousVisits": "過去の診察",
+    "noVisits": "診察記録はありません",
+    "ownerSaved": "飼い主情報が保存されました。",
+    "ownerAdded": "新しい飼い主が追加されました。"
+  },
+  "ownerForm": {
+    "newTitle": "新しい飼い主",
+    "editTitle": "飼い主を編集",
+    "submitNew": "飼い主を追加",
+    "submitEdit": "飼い主を更新"
+  },
+  "petForm": {
+    "newTitle": "新しいペット",
+    "editTitle": "ペットを編集",
+    "typeLabel": "種類",
+    "submitNew": "ペットを追加",
+    "submitEdit": "ペットを更新",
+    "petSaved": "ペット情報が保存されました。"
+  },
+  "visitForm": {
+    "title": "新しい診察",
+    "submit": "診察を追加",
+    "visitAdded": "診察の予約が完了しました。"
+  }
+}

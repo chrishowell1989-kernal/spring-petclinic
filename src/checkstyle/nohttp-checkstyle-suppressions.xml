@@ -5,7 +5,10 @@
 <suppressions>
 	<suppress files="node_modules[\\/].*" checks=".*"/>
 	<suppress files="node[\\/].*" checks=".*"/>
+	<suppress files="nodejs[\\/].*" checks=".*"/>
 	<suppress files="build[\\/].*" checks=".*"/>
 	<suppress files="target[\\/].*" checks=".*"/>
+	<suppress files="\.gradle[\\/].*" checks=".*"/>
+	<suppress files="dist[\\/].*" checks=".*"/>
 	<suppress files=".+\.(jar|git|ico|p12|gif|jks|jpg|svg|log)" checks="NoHttp"/>
 </suppressions>

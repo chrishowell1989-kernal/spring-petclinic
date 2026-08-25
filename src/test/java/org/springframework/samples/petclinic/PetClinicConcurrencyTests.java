@@ -2,6 +2,7 @@ package org.springframework.samples.petclinic;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -17,12 +18,13 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.samples.petclinic.owner.Owner;
 import org.springframework.samples.petclinic.owner.OwnerRepository;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.samples.petclinic.owner.PetTypeRepository;
+import org.springframework.samples.petclinic.owner.dto.PetRequest;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -33,6 +35,9 @@ public class PetClinicConcurrencyTests {
 
 	@Autowired
 	private OwnerRepository ownerRepository;
+
+	@Autowired
+	private PetTypeRepository petTypeRepository;
 
 	@Autowired
 	private RestTemplateBuilder restTemplateBuilder;
@@ -46,6 +51,12 @@ public class PetClinicConcurrencyTests {
 
 		int initialPetCount = owner.getPets().size();
 		String duplicatePetName = "ConcurrencyTestPet";
+		Integer catTypeId = petTypeRepository.findPetTypes()
+			.stream()
+			.filter(t -> "cat".equalsIgnoreCase(t.getName()))
+			.findFirst()
+			.orElseThrow()
+			.getId();
 
 		// Ensure duplicate pet name does not exist yet
 		assertThat(owner.getPet(duplicatePetName)).isNull();
@@ -68,23 +79,15 @@ public class PetClinicConcurrencyTests {
 					startLatch.await(); // Wait to start simultaneously
 
 					HttpHeaders headers = new HttpHeaders();
-					headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+					headers.setContentType(MediaType.APPLICATION_JSON);
 
-					MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-					map.add("name", duplicatePetName);
-					map.add("birthDate", "2020-01-01");
-					map.add("type", "cat");
+					PetRequest petRequest = new PetRequest(duplicatePetName, LocalDate.of(2020, 1, 1), catTypeId);
+					HttpEntity<PetRequest> request = new HttpEntity<>(petRequest, headers);
 
-					HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-
-					ResponseEntity<String> response = template.postForEntity("/owners/" + ownerId + "/pets/new",
+					ResponseEntity<String> response = template.postForEntity("/api/owners/" + ownerId + "/pets",
 							request, String.class);
 
-					String body = response.getBody();
-					// If the response page contains the duplicate validation error, it
-					// was blocked
-					if (response.getStatusCode().is2xxSuccessful()
-							&& (body == null || !body.contains("is already in use"))) {
+					if (response.getStatusCode() == HttpStatus.CREATED) {
 						successCount.incrementAndGet();
 					}
 					else {
