@@ -16,7 +16,6 @@
 package org.springframework.samples.petclinic.owner.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 
 /**
  * Request payload for creating or updating an
@@ -25,6 +24,5 @@ import jakarta.validation.constraints.Pattern;
  * {@code setDisallowedFields("id", "*.id")} mass-assignment guard.
  */
 public record OwnerRequest(@NotBlank String firstName, @NotBlank String lastName, @NotBlank String address,
-		@NotBlank String city,
-		@NotBlank @Pattern(regexp = "\\d{10}", message = "{telephone.invalid}") String telephone) {
+		@NotBlank String city, @NotBlank String telephone) {
 }
