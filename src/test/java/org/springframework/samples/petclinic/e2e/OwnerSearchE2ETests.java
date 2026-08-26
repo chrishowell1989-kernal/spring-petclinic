@@ -80,4 +80,19 @@ class OwnerSearchE2ETests extends PlaywrightTestSupport {
 		assertThat(page.getByText("Sam Schultz")).isVisible();
 	}
 
+	/**
+	 * Regression guard for the specific SCRUM-11 defect: the service doubled the search
+	 * term ("Davi" would have been queried as "DaviDavi"), which broke prefix matching
+	 * too. A staff member who remembers only the start of a name searches "Davi" and both
+	 * "Davis" owners must still come back in the results list.
+	 */
+	@Test
+	void searchByPartialLastNamePrefixReturnsMatchingOwners() {
+		searchByLastName("Davi");
+
+		assertThat(page).hasURL(Pattern.compile(".*/owners\\?lastName=Davi.*"));
+		assertThat(page.getByText("Betty Davis")).isVisible();
+		assertThat(page.getByText("Harold Davis")).isVisible();
+	}
+
 }
