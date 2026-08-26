@@ -55,6 +55,8 @@ class VetControllerTests {
 		Vet james = new Vet();
 		james.setFirstName("James");
 		james.setLastName("Carter");
+		james.setEmail("james.carter@petclinic.com");
+		james.setTelephone("07700900123");
 		james.setId(1);
 		return james;
 	}
@@ -63,6 +65,8 @@ class VetControllerTests {
 		Vet helen = new Vet();
 		helen.setFirstName("Helen");
 		helen.setLastName("Leary");
+		helen.setEmail("helen.leary@petclinic.com");
+		helen.setTelephone("07700900456");
 		helen.setId(2);
 		Specialty radiology = new Specialty();
 		radiology.setId(1);
@@ -83,6 +87,8 @@ class VetControllerTests {
 			.andExpect(status().isOk())
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			.andExpect(jsonPath("$.content[0].id").value(1))
+			.andExpect(jsonPath("$.content[0].email").value("james.carter@petclinic.com"))
+			.andExpect(jsonPath("$.content[0].telephone").value("07700900123"))
 			.andExpect(jsonPath("$.content[1].specialties[0].name").value("radiology"))
 			.andExpect(jsonPath("$.page.totalElements").value(2));
 	}

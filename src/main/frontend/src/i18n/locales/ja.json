@@ -18,6 +18,8 @@
     "address": "住所",
     "city": "市区町村",
     "telephone": "電話番号",
+    "email": "メールアドレス",
+    "contactNumber": "連絡先番号",
     "name": "名前",
     "type": "種類",
     "birthDate": "生年月日",

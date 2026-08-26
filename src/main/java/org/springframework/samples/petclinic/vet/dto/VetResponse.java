@@ -19,10 +19,11 @@ import java.util.List;
 
 import org.springframework.samples.petclinic.vet.Vet;
 
-public record VetResponse(Integer id, String firstName, String lastName, List<SpecialtyResponse> specialties) {
+public record VetResponse(Integer id, String firstName, String lastName, String email, String telephone,
+		List<SpecialtyResponse> specialties) {
 
 	public static VetResponse of(Vet vet) {
-		return new VetResponse(vet.getId(), vet.getFirstName(), vet.getLastName(),
+		return new VetResponse(vet.getId(), vet.getFirstName(), vet.getLastName(), vet.getEmail(), vet.getTelephone(),
 				vet.getSpecialties().stream().map(SpecialtyResponse::of).toList());
 	}
 

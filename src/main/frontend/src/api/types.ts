@@ -57,6 +57,8 @@ export interface VetResponse {
   id: number
   firstName: string
   lastName: string
+  email: string
+  telephone: string
   specialties: SpecialtyResponse[]
 }
 

@@ -18,6 +18,8 @@
     "address": "Adres",
     "city": "Şehir",
     "telephone": "Telefon",
+    "email": "E-posta Adresi",
+    "contactNumber": "İletişim Numarası",
     "name": "Ad",
     "type": "Tür",
     "birthDate": "Doğum Tarihi",

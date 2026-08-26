@@ -18,6 +18,8 @@
     "address": "Adresse",
     "city": "Stadt",
     "telephone": "Telefon",
+    "email": "E-Mail-Adresse",
+    "contactNumber": "Telefonnummer",
     "name": "Name",
     "type": "Typ",
     "birthDate": "Geburtsdatum",

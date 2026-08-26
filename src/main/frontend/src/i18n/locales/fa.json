@@ -18,6 +18,8 @@
     "address": "آدرس",
     "city": "شهر",
     "telephone": "تلفن",
+    "email": "آدرس ایمیل",
+    "contactNumber": "شماره تماس",
     "name": "نام",
     "type": "نوع",
     "birthDate": "تاریخ تولد",

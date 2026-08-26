@@ -18,6 +18,8 @@
     "address": "पता",
     "city": "शहर",
     "telephone": "फ़ोन नंबर",
+    "email": "ईमेल पता",
+    "contactNumber": "संपर्क नंबर",
     "name": "नाम",
     "type": "प्रकार",
     "birthDate": "जन्म तिथि",

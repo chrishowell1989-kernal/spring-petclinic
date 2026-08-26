@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { vetsApi } from '../../api/vets'
 import type { VetResponse } from '../../api/types'
 import Pagination from '../../components/common/Pagination'
+import { formatUkMobile } from '../../utils/phone'
 
 export default function VetsListPage() {
   const { t } = useTranslation()
@@ -32,6 +33,8 @@ export default function VetsListPage() {
         <TableHead>
           <TableRow>
             <TableCell>{t('common.name')}</TableCell>
+            <TableCell>{t('common.email')}</TableCell>
+            <TableCell>{t('common.contactNumber')}</TableCell>
             <TableCell>{t('common.specialties')}</TableCell>
           </TableRow>
         </TableHead>
@@ -41,6 +44,8 @@ export default function VetsListPage() {
               <TableCell>
                 {vet.firstName} {vet.lastName}
               </TableCell>
+              <TableCell>{vet.email}</TableCell>
+              <TableCell>{formatUkMobile(vet.telephone)}</TableCell>
               <TableCell>
                 {vet.specialties.length > 0
                   ? vet.specialties.map((s) => s.name).join(' ')

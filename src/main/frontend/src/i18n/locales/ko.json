@@ -18,6 +18,8 @@
     "address": "주소",
     "city": "도시",
     "telephone": "전화번호",
+    "email": "이메일 주소",
+    "contactNumber": "연락처",
     "name": "이름",
     "type": "종류",
     "birthDate": "생년월일",

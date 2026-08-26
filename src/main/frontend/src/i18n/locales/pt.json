@@ -18,6 +18,8 @@
     "address": "Morada",
     "city": "Cidade",
     "telephone": "Telefone",
+    "email": "Endereço de e-mail",
+    "contactNumber": "Número de contato",
     "name": "Nome",
     "type": "Tipo",
     "birthDate": "Data de nascimento",

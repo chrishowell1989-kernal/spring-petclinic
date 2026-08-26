@@ -1,9 +1,9 @@
-INSERT INTO vets (first_name, last_name) SELECT 'James', 'Carter' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=1);
-INSERT INTO vets (first_name, last_name) SELECT 'Helen', 'Leary' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=2);
-INSERT INTO vets (first_name, last_name) SELECT 'Linda', 'Douglas' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=3);
-INSERT INTO vets (first_name, last_name) SELECT 'Rafael', 'Ortega' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=4);
-INSERT INTO vets (first_name, last_name) SELECT 'Henry', 'Stevens' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=5);
-INSERT INTO vets (first_name, last_name) SELECT 'Sharon', 'Jenkins' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=6);
+INSERT INTO vets (first_name, last_name, email, telephone) SELECT 'James', 'Carter', 'james.carter@petclinic.com', '07700900123' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=1);
+INSERT INTO vets (first_name, last_name, email, telephone) SELECT 'Helen', 'Leary', 'helen.leary@petclinic.com', '07700900456' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=2);
+INSERT INTO vets (first_name, last_name, email, telephone) SELECT 'Linda', 'Douglas', 'linda.douglas@petclinic.com', '07700900789' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=3);
+INSERT INTO vets (first_name, last_name, email, telephone) SELECT 'Rafael', 'Ortega', 'rafael.ortega@petclinic.com', '07700900234' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=4);
+INSERT INTO vets (first_name, last_name, email, telephone) SELECT 'Henry', 'Stevens', 'henry.stevens@petclinic.com', '07700900567' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=5);
+INSERT INTO vets (first_name, last_name, email, telephone) SELECT 'Sharon', 'Jenkins', 'sharon.jenkins@petclinic.com', '07700900890' WHERE NOT EXISTS (SELECT * FROM vets WHERE id=6);
 
 INSERT INTO specialties (name) SELECT 'radiology' WHERE NOT EXISTS (SELECT * FROM specialties WHERE name='radiology');
 INSERT INTO specialties (name) SELECT 'surgery' WHERE NOT EXISTS (SELECT * FROM specialties WHERE name='surgery'); 
