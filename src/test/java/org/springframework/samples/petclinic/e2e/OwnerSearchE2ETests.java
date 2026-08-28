@@ -28,9 +28,14 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
  * matching record — both immediately after adding a brand-new owner and for pre-existing
  * (seed) owners — and must never surface the "has not been found" message for a real
  * match. The underlying bug double-concatenated the search term ({@code lastName +
- * lastName}), so every last-name search matched nothing.
+ * lastName}), so every last-name search matched nothing (the UI then showed the
+ * {@code "<term>" has not been found} warning instead of the owner).
  */
 class OwnerSearchE2ETests extends PlaywrightTestSupport {
+
+	private static final Pattern OWNER_DETAILS_URL = Pattern.compile(".*/owners/\\d+$");
+
+	private static final Pattern NOT_FOUND_MESSAGE = Pattern.compile("has not been found");
 
 	private void addOwner(String firstName, String lastName) {
 		page.navigate(baseUrl() + "/owners/new");
@@ -41,7 +46,7 @@ class OwnerSearchE2ETests extends PlaywrightTestSupport {
 		page.getByLabel("Telephone").fill("1234567890");
 		page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add Owner")).click();
 		// Landed on the new owner's details page.
-		assertThat(page).hasURL(Pattern.compile(".*/owners/\\d+$"));
+		assertThat(page).hasURL(OWNER_DETAILS_URL);
 	}
 
 	private void searchByLastName(String lastName) {
@@ -52,6 +57,10 @@ class OwnerSearchE2ETests extends PlaywrightTestSupport {
 
 	/**
 	 * Scenario: Search by last name succeeds immediately after adding a new owner.
+	 * <p>
+	 * Given a new owner has just been added, When I search by their last name, Then the
+	 * matching record is returned (a single match navigates straight to the details page)
+	 * And the "Owner not found" message is not displayed.
 	 */
 	@Test
 	void searchByLastNameFindsNewlyAddedOwner() {
@@ -62,23 +71,52 @@ class OwnerSearchE2ETests extends PlaywrightTestSupport {
 		searchByLastName(lastName);
 
 		// The matching record is returned (single match navigates straight to details).
-		assertThat(page).hasURL(Pattern.compile(".*/owners/\\d+$"));
+		assertThat(page).hasURL(OWNER_DETAILS_URL);
 		assertThat(page.getByText("Quincy " + lastName)).isVisible();
 		// ...and the "not found" message is not displayed.
-		assertThat(page.getByText(Pattern.compile("has not been found"))).not().isVisible();
+		assertThat(page.getByText(NOT_FOUND_MESSAGE)).not().isVisible();
+	}
+
+	/**
+	 * Scenario: Search by last name succeeds immediately after adding a new owner —
+	 * results-list variant.
+	 * <p>
+	 * With two owners sharing the freshly-added last name the UI renders the results list
+	 * rather than redirecting, so this is where the "has not been found" warning would
+	 * actually appear if the search returned nothing. It makes the acceptance criterion
+	 * "an 'Owner not found' message should not be displayed" a meaningful assertion (and
+	 * directly reproduces the reported bug, which surfaced that warning for every
+	 * search).
+	 */
+	@Test
+	void newlyAddedOwnersAppearInResultsWithoutNotFoundMessage() {
+		String lastName = "Marbleheath";
+		addOwner("Quincy", lastName);
+		addOwner("Rhonda", lastName);
+
+		searchByLastName(lastName);
+
+		// Two matches keep us on the results list; both owners are shown...
+		assertThat(page.getByText("Quincy " + lastName)).isVisible();
+		assertThat(page.getByText("Rhonda " + lastName)).isVisible();
+		// ...and the "not found" warning is absent even though the list view can show it.
+		assertThat(page.getByText(NOT_FOUND_MESSAGE)).not().isVisible();
 	}
 
 	/**
 	 * Scenario: Search by last name works for pre-existing owners (regression check).
+	 * <p>
+	 * George Franklin is seed data; searching his last name must still resolve to his
+	 * record.
 	 */
 	@Test
 	void searchByLastNameFindsPreExistingOwner() {
 		searchByLastName("Franklin");
 
-		// George Franklin is seed data; single match navigates straight to details.
-		assertThat(page).hasURL(Pattern.compile(".*/owners/\\d+$"));
+		// Single seed-data match navigates straight to details.
+		assertThat(page).hasURL(OWNER_DETAILS_URL);
 		assertThat(page.getByText("George Franklin")).isVisible();
-		assertThat(page.getByText(Pattern.compile("has not been found"))).not().isVisible();
+		assertThat(page.getByText(NOT_FOUND_MESSAGE)).not().isVisible();
 	}
 
 }
