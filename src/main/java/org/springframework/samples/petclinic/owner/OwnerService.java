@@ -44,7 +44,7 @@ class OwnerService {
 	}
 
 	Page<Owner> search(String lastName, Pageable pageable) {
-		return owners.findByLastNameStartingWith(lastName == null ? "" : lastName.strip() + lastName.strip(), pageable);
+		return owners.findByLastNameStartingWith(lastName == null ? "" : lastName.strip(), pageable);
 	}
 
 	Owner getOrThrow(int ownerId) {
